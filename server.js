@@ -4,12 +4,11 @@ const cors = require('cors');
 // Connection checker
 const { checkDatabaseConnection } = require('./src/app/checkConnection.js');
 
-// Import Routes
-const { createAuthHandler } = require('./src/app/auth.js');
-const { createUserHandler, getUserByIdHandler, deleteUserByIdHandler } = require('./src/app/user.js');
-const { authenticateJWT } = require('./src/middleware.js'); // Import middleware
+// User Routes
+const authRouter = require('./src/app/auth.js');
+const userRouter = require('./src/app/user.js');
 
-// Diary routes
+// Diary Routes
 const diaryRouter = require('./src/app/diary.js');
 
 const { PrismaClient } = require('@prisma/client');
@@ -18,7 +17,6 @@ const prisma = new PrismaClient();
 const PORT = process.env.PORT || 8000;
 
 const app = express();
-const router = express.Router();
 
 app.use(cors());
 app.use(express.json());
@@ -26,14 +24,10 @@ app.use(express.json());
 checkDatabaseConnection();
 
 // Auth route
-app.post('/login', createAuthHandler);  // Route untuk login
+app.use('/login', authRouter);
 
 // User routes
-app.post('/register', createUserHandler);
-
-// Use JWT authentication middleware for secure routes
-app.get('/users/:userId', authenticateJWT, getUserByIdHandler);  // Secure route with JWT
-app.delete('/users/:userId', authenticateJWT, deleteUserByIdHandler);  // Secure route with JWT
+app.use('/users', userRouter);
 
 // Diary routes
 app.use('/diary', diaryRouter);

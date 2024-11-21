@@ -1,13 +1,17 @@
-const express = require('express');
+const { authenticateJWT } = require('../middleware.js');
+
 const { PrismaClient } = require('@prisma/client');
-const { authenticateJWT } = require('../middleware.js'); // Import middleware
 const prisma = new PrismaClient();
+
+const express = require('express');
 const router = express.Router();
 
-// Route untuk membuat diary
+// Membuat diary baru
 router.post('/create', authenticateJWT, async (req, res, next) => {
   const payload = req.body;
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
+
+  req.header
 
   if (!payload.title || !payload.story) {
     return res.status(400).json({
@@ -19,7 +23,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
   try {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
-      data: {
+      data: {   
         date: new Date(),
         title: payload.title,
         story: payload.story,
@@ -38,6 +42,63 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
         title: newDiary.title,
         story: newDiary.story,
       },
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Menampilkan diary berdasarkan user id
+router.get('/:userId', authenticateJWT, async (req, res, next) => {
+  const id = req.params.id;  // Mengambil id user dari params
+
+  try {
+    const diaries = await prisma.diary.findMany({
+      where: { id: parseInt(id) },
+    });
+
+    return res.status(200).json({
+      status_code: 200,
+      message: 'Diary berhasil ditemukan',
+      data: diaries,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Menampilkan diary berdasarkan id diary
+router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
+  const id = req.params.id;  // Mengambil id diary dari params
+
+  try {
+    const diary = await prisma.diary.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    return res.status(200).json({
+      status_code: 200,
+      message: 'Diary berhasil ditemukan',  
+      data: diary,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Menghapus diary berdasarkan id
+router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
+  const id = req.params.id;  // Mengambil id diary dari params
+
+  try {
+    const deletedDiary = await prisma.diary.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return res.status(200).json({
+      status_code: 200,
+      message: 'Diary berhasil dihapus',
+      data: deletedDiary,
     });
   } catch (err) {
     return next(err);

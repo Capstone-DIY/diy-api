@@ -1,23 +1,27 @@
 const bcrypt = require('bcryptjs');
+const { authenticateJWT } = require('../middleware.js');
+
 const { PrismaClient } = require('@prisma/client');
-const { authenticateJWT } = require('../middleware.js'); // Import middleware
 const prisma = new PrismaClient();
 
-// Handlers
+const express = require('express');
+const router = express.Router();
 
-// Create a new user
-async function createUserHandler(req, res, next) {
+// Handler
+
+// Membuat user baru
+router.post('/create', authenticateJWT, async (req, res, next) => {
   const payload = req.body;
 
   try {
     if (!payload.username || !payload.password) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Username and password are required',
+        message: 'Tolong isi username dan password',
       });
     }
 
-    // Check if user with the same username already exists
+    // Melakukan pengecekan username yang sudah ada
     const existingUser = await prisma.user.findUnique({
       where: { username: payload.username },
     });
@@ -25,14 +29,14 @@ async function createUserHandler(req, res, next) {
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Username already exists',
+        message: 'Username sudah digunakan',
       });
     }
 
-    // Hash the password before storing it
+    // Hash password sebelum dimasukan ke database
     const hashedPassword = await bcrypt.hash(payload.password, 10);
 
-    // Create the new user
+    // Membuat user baru
     const newUser = await prisma.user.create({
       data: {
         username: payload.username,
@@ -42,73 +46,73 @@ async function createUserHandler(req, res, next) {
 
     return res.status(201).json({
       status_code: 201,
-      message: 'User created successfully',
+      message: 'Pengguna berhasil ditambahkan',
       data: {
-        id: newUser.userId,
+        id: newUser.id,
         username: newUser.username,
       },
     });
   } catch (err) {
     return next(err);
   }
-}
+});
 
-// Get user by ID (with JWT Authentication)
-async function getUserByIdHandler(req, res, next) {
-  const { userId } = req.params;
+// Get user berdasarkan ID (dengan JWT Authentication)
+router.get('/:id', authenticateJWT, async (req, res, next) => {
+  const { id } = req.params;
 
-  // Verifying the logged-in user with the token
+  // Verifikasi user yang sudah login dengan token
   try {
-    // Check if the token's userId matches the requested userId (authorization)
-    if (parseInt(userId) !== req.userId) {
+    // Mengecek apakah id user dari token sama dengan user id yang diinginkan
+    if (parseInt(id) !== req.id) {
       return res.status(403).json({
         status_code: 403,
-        message: 'Unauthorized to access this user\'s data',
+        message: 'Tidak dizinkan untuk mengakses user ini',
       });
     }
 
-    // Fetch user data from the database
+    // Mengambil user data dari database
     const user = await prisma.user.findUnique({
-      where: { userId: parseInt(userId) },
+      where: { id: parseInt(id) },
     });
 
     if (!user) {
       return res.status(404).json({
         status_code: 404,
-        message: 'User not found',
+        message: 'Pengguna tidak ditemukan',
       });
     }
 
     return res.status(200).json({
       status_code: 200,
-      message: 'User found',
+      message: 'Pengguna ditemukan',
       data: {
-        id: user.userId,
+        id: user.id,
         username: user.username,
       },
     });
   } catch (err) {
     return next(err);
   }
-}
+});
 
-// Delete user by ID (with JWT Authentication)
-async function deleteUserByIdHandler(req, res, next) {
-  const { userId } = req.params;
+// Delete user by ID (dengan JWT Authentication)
+router.delete('/:id', authenticateJWT, async (req, res, next) => {
+  const { id } = req.params;
 
-  // Verifying the logged-in user with the token
+  // Verifikasi user yang sudah login dengan token
   try {
-    // Check if the token's userId matches the requested userId (authorization)
-    if (parseInt(userId) !== req.userId) {
+    // Cek apakah id dari token sama dengan user id yang diinginkan
+    if (parseInt(id) !== req.id) {
       return res.status(403).json({
         status_code: 403,
         message: 'Unauthorized to delete this user',
       });
     }
 
-    // Check if the user exists
+    // Cek apakah pengguna dengan id tersebut ada di database
     const user = await prisma.user.findUnique({
-      where: { userId: parseInt(userId) },
+      where: { id: parseInt(id) },
     });
 
     if (!user) {
@@ -118,9 +122,9 @@ async function deleteUserByIdHandler(req, res, next) {
       });
     }
 
-    // Delete the user from the database
+    // Menghapus pengguna dari database
     await prisma.user.delete({
-      where: { userId: parseInt(userId) },
+      where: { id: parseInt(id) },
     });
 
     return res.status(200).json({
@@ -130,6 +134,6 @@ async function deleteUserByIdHandler(req, res, next) {
   } catch (err) {
     return next(err);
   }
-}
+});
 
-module.exports = { createUserHandler, getUserByIdHandler, deleteUserByIdHandler };
+module.exports = router;

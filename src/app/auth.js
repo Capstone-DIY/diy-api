@@ -4,7 +4,10 @@ const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function createAuthHandler(req, res, next) {
+const express = require('express');
+const router = express.Router();
+
+router.post('/', async (req, res, next) => {
   const payload = req.body;
 
   try {
@@ -12,10 +15,12 @@ async function createAuthHandler(req, res, next) {
       throw new Error('Password wajib dimasukan');
     }
 
+    // Mencari username di database dari username di payload
     const user = await prisma.user.findUnique({
       where: { username: payload.username },
     });
 
+    // Membandingkan password yang sudah dihash di database dengan password di payload
     const isPasswordMatch = await bcrypt.compare(
       payload.password,
       user?.password?? ''
@@ -41,6 +46,6 @@ async function createAuthHandler(req, res, next) {
   } catch (err) {
     return next(err);
   }
-};
+});
 
-module.exports = { createAuthHandler };
+module.exports = router;
