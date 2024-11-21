@@ -30,7 +30,7 @@ model Diary {
   favorited       Boolean     @default(false)
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
-  userId          Int
+  userId          Int         @default(1) //???
   user            User        @relation("UserDiaries",fields: [userId], references: [id])
 }
 
@@ -40,6 +40,6 @@ model Analytic {
   quotes          String?      
   created_at      DateTime    @default(now())                
   updated_at      DateTime    @updatedAt
-  userId          Int
+  userId          Int         @default(1) //???
   user            User        @relation("UserAnalytic",fields: [userId], references: [id])
 }
