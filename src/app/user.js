@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
-const uuid = require('uuid');
-
 const { PrismaClient } = require('@prisma/client');
+const { authenticateJWT } = require('../middleware.js'); // Import middleware
 const prisma = new PrismaClient();
 
 // Handlers
@@ -38,7 +37,6 @@ async function createUserHandler(req, res, next) {
       data: {
         username: payload.username,
         password: hashedPassword,
-        userId: uuid.v4(), // Generate a unique userId
       },
     });
 
@@ -55,13 +53,23 @@ async function createUserHandler(req, res, next) {
   }
 }
 
-// Get user by ID
+// Get user by ID (with JWT Authentication)
 async function getUserByIdHandler(req, res, next) {
   const { userId } = req.params;
 
+  // Verifying the logged-in user with the token
   try {
+    // Check if the token's userId matches the requested userId (authorization)
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Unauthorized to access this user\'s data',
+      });
+    }
+
+    // Fetch user data from the database
     const user = await prisma.user.findUnique({
-      where: { userId: userId },
+      where: { userId: parseInt(userId) },
     });
 
     if (!user) {
@@ -84,13 +92,23 @@ async function getUserByIdHandler(req, res, next) {
   }
 }
 
-// Delete user by ID
+// Delete user by ID (with JWT Authentication)
 async function deleteUserByIdHandler(req, res, next) {
   const { userId } = req.params;
 
+  // Verifying the logged-in user with the token
   try {
+    // Check if the token's userId matches the requested userId (authorization)
+    if (parseInt(userId) !== req.userId) {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Unauthorized to delete this user',
+      });
+    }
+
+    // Check if the user exists
     const user = await prisma.user.findUnique({
-      where: { userId: userId },
+      where: { userId: parseInt(userId) },
     });
 
     if (!user) {
@@ -100,8 +118,9 @@ async function deleteUserByIdHandler(req, res, next) {
       });
     }
 
+    // Delete the user from the database
     await prisma.user.delete({
-      where: { userId: userId },
+      where: { userId: parseInt(userId) },
     });
 
     return res.status(200).json({
