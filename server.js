@@ -32,7 +32,7 @@ app.use('/', userRouter);
 // Diary routes
 app.use('/diary', diaryRouter);
 
-app.use((err, req, res, next) => {
+app.use((err, res) => {
   console.error(err);
   res.status(500).json({
     status_code: 500,
