@@ -9,11 +9,11 @@ datasource db {
 
 model User {
   id              Int         @id @default(autoincrement()) 
-  username        String      @unique
+  email           String      @unique @db.VarChar(64)
+  username        String?     @unique
   password        String
   name            String?
   dob             DateTime?   @db.Date
-  email           String?     @unique @db.VarChar(64)
   gender          String?
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
@@ -29,6 +29,7 @@ model Diary {
   title           String
   story           String      @db.VarChar(254)
   emotion         String?     
+  response        String?
   favorited       Boolean     @default(false)
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt

@@ -15,9 +15,9 @@ router.post('/', async (req, res, next) => {
       throw new Error('Password wajib dimasukan');
     }
 
-    // Mencari username di database dari username di payload
+    // Mencari email di database dari email di payload
     const user = await prisma.user.findUnique({
-      where: { username: payload.username },
+      where: { email: payload.email },
     });
 
     // Membandingkan password yang sudah dihash di database dengan password di payload
@@ -27,7 +27,7 @@ router.post('/', async (req, res, next) => {
     );
 
     if (user === null || !isPasswordMatch) {
-      throw new Error('Username atau password salah');
+      throw new Error('Email atau password salah');
     }
 
     const token = jwt.sign({id: user.userId}, process.env.JWT_SECRET, {
@@ -40,7 +40,7 @@ router.post('/', async (req, res, next) => {
       data: {
         token: token,
         id: user.userId,
-        username: user.username,
+        email: user.email,
       },
     });
   } catch (err) {

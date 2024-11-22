@@ -10,26 +10,26 @@ const router = express.Router();
 // Handler
 
 // Membuat user baru
-router.post('/create', authenticateJWT, async (req, res, next) => {
+router.post('/register', async (req, res, next) => {
   const payload = req.body;
 
   try {
-    if (!payload.username || !payload.password) {
+    if (!payload.email || !payload.password) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Tolong isi username dan password',
+        message: 'Email dan password harus diisi',
       });
     }
 
-    // Melakukan pengecekan username yang sudah ada
+    // Melakukan pengecekan email yang terdaftar
     const existingUser = await prisma.user.findUnique({
-      where: { username: payload.username },
+      where: { email: payload.email },
     });
 
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Username sudah digunakan',
+        message: 'Email sudah terdaftar',
       });
     }
 
@@ -39,7 +39,8 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     // Membuat user baru
     const newUser = await prisma.user.create({
       data: {
-        username: payload.username,
+        name: payload.name,
+        email: payload.email,
         password: hashedPassword,
       },
     });
@@ -49,7 +50,8 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
       message: 'Pengguna berhasil ditambahkan',
       data: {
         id: newUser.id,
-        username: newUser.username,
+        name: newUser.name,
+        email: newUser.email,
       },
     });
   } catch (err) {
@@ -58,7 +60,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
 });
 
 // Get user berdasarkan ID (dengan JWT Authentication)
-router.get('/:id', authenticateJWT, async (req, res, next) => {
+router.get('/user/:id', authenticateJWT, async (req, res, next) => {
   const { id } = req.params;
 
   // Verifikasi user yang sudah login dengan token
@@ -97,7 +99,7 @@ router.get('/:id', authenticateJWT, async (req, res, next) => {
 });
 
 // Delete user by ID (dengan JWT Authentication)
-router.delete('/:id', authenticateJWT, async (req, res, next) => {
+router.delete('/user/:id', authenticateJWT, async (req, res, next) => {
   const { id } = req.params;
 
   // Verifikasi user yang sudah login dengan token

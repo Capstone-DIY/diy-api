@@ -11,12 +11,10 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
   const payload = req.body;
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
-  req.header
-
-  if (!payload.title || !payload.story) {
+  if (!payload.date || !payload.title || !payload.story) {
     return res.status(400).json({
       status_code: 400,
-      message: 'Title dan story harus diisi',
+      message: 'Date, Title atau story harus diisi',
     });
   }
 
@@ -24,7 +22,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
-        date: new Date(),
+        date: payload.date,
         title: payload.title,
         story: payload.story,
         emotion: payload.emotion, // Optional
@@ -48,13 +46,13 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
   }
 });
 
-// Menampilkan diary berdasarkan user id
+// Menampilkan semua diary berdasarkan user id
 router.get('/:userId', authenticateJWT, async (req, res, next) => {
   const id = req.params.id;  // Mengambil id user dari params
 
   try {
     const diaries = await prisma.diary.findMany({
-      where: { id: parseInt(id) },
+      where: { userId: parseInt(id) },
     });
 
     return res.status(200).json({
@@ -85,6 +83,39 @@ router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
     return next(err);
   }
 });
+
+// Mengedit diary berdasarkan id
+router.put('/:diaryID', authenticateJWT, async (req, res, next) => {
+  const payload = req.body;
+  const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
+
+  try {
+    // Membuat diary untuk user yang sedang login
+    const newDiary = await prisma.diary.update({
+      data: {   
+        date: payload.date,
+        title: payload.title,
+        story: payload. story,
+        emotion: payload.emotion, // Optional
+        updated_at: new Date(),
+        userId: userId,  // Menyertakan userId yang didapat dari token
+      },
+    });
+
+    return res.status(201).json({
+      status_code: 201,
+      message: 'Diary berhasil ditambahkan',
+      data: {
+        diaryId: newDiary.diaryId,
+        title: newDiary.title,
+        story: newDiary.story,
+      },
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 
 // Menghapus diary berdasarkan id
 router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {

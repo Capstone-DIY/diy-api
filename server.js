@@ -27,7 +27,7 @@ checkDatabaseConnection();
 app.use('/login', authRouter);
 
 // User routes
-app.use('/users', userRouter);
+app.use('/', userRouter);
 
 // Diary routes
 app.use('/diary', diaryRouter);
