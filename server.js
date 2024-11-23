@@ -23,9 +23,6 @@ app.use(express.json());
 
 checkDatabaseConnection();
 
-// Auth route
-app.use('/login', authRouter);
-
 // User routes
 app.use('/', userRouter);
 
