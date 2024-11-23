@@ -11,10 +11,10 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
   const payload = req.body;
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
-  if (!payload.date || !payload.title || !payload.story) {
+  if (!payload.title || !payload.story) {
     return res.status(400).json({
       status_code: 400,
-      message: 'Date, Title atau story harus diisi',
+      message: 'Title atau story harus diisi',
     });
   }
 
@@ -22,7 +22,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
-        date: payload.date,
+        date: new Date(),
         title: payload.title,
         story: payload.story,
         emotion: payload.emotion, // Optional
