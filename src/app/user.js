@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const firebase = require('firebase-admin');
 const { authenticateJWT } = require('../middleware.js');
 
 const { PrismaClient } = require('@prisma/client');
@@ -82,16 +82,15 @@ router.post('/', async (req, res, next) => {
       throw new Error('Email atau password salah');
     }
 
-    const token = jwt.sign({id: user.userId}, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES,
-    });
+    // Menghasilkan token Firebase (ID token) setelah login berhasil
+    const firebaseToken = await firebase.auth().createCustomToken(user.id.toString());
 
     return res.status(200).json({
       status_code: 200,
       message: 'Login berhasil',
       data: {
-        token: token,
-        id: user.userId,
+        token: firebaseToken,  // Kirim Firebase token yang dihasilkan
+        id: user.id,
         email: user.email,
       },
     });
@@ -105,10 +104,6 @@ router.get('/user/:id', authenticateJWT, async (req, res, next) => {
   const { id } = req.params;
   
   try {
-
-    console.log(req.userId);
-    console.log(id);
-
     // Mengecek apakah id user dari token sama dengan user id yang diinginkan
     if (parseInt(id) !== req.userId) {
       return res.status(403).json({

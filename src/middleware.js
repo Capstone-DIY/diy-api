@@ -1,4 +1,10 @@
-const jwt = require('jsonwebtoken');
+const firebase = require('firebase-admin');
+
+// Insiasi firebase SDK
+firebase.initializeApp({
+  // TODO: Ganti path servieAccountKey.jsonc
+  credential: firebase.credential.cert(require('./serviceAccountKey.json'))
+});
 
 // Middleware untuk verifikasi token JWT
 const authenticateJWT = (req, res, next) => {
@@ -11,17 +17,18 @@ const authenticateJWT = (req, res, next) => {
     });
   }
 
-  try {
-    // Verifikasi token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;  // Menyimpan userId dari token pada request object
-    next();  // Lanjut ke route handler berikutnya
-  } catch (err) {
-    return res.status(403).json({
-      status_code: 403,
-      message: 'Token tidak valid atau telah kadaluarsa',
+  // Verifikasi token dengan firebase SDK
+  firebase.auth().verifyIdToken(token)
+    .then(decodedToken => {
+      req.userId = decodedToken.uid;  // Mengambil userId dari decoded token
+      next(); // Lanjut ke route handler berikutnya
+    })
+    .catch(error => {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Token tidak valid atau telah kadaluarsa',
+      });
     });
-  }
 };
 
 module.exports = { authenticateJWT };

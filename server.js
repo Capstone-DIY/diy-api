@@ -5,7 +5,6 @@ const cors = require('cors');
 const { checkDatabaseConnection } = require('./src/app/checkConnection.js');
 
 // User Routes
-const authRouter = require('./src/app/auth.js');
 const userRouter = require('./src/app/user.js');
 
 // Diary Routes
