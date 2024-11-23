@@ -52,13 +52,20 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
 
 // Menampilkan diary berdasarkan id diary
 router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
-  const id = req.params.id;  // Mengambil id diary dari params
+  const id = req.params.diaryId;  // Mengambil diary id dari params
   
   try {
     const diary = await prisma.diary.findUnique({
       where: { id: parseInt(id) },
     });
     
+    if (!diary) {
+      return res.status(404).json({
+        status_code: 404,
+        message: 'Diary tidak ditemukan',
+      });
+    }
+
     return res.status(200).json({
       status_code: 200,
       message: 'Diary berhasil ditemukan',  
@@ -70,18 +77,44 @@ router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
 });
 
 // Mengedit diary berdasarkan id
-router.put('/:diaryID', authenticateJWT, async (req, res, next) => {
-  const payload = req.body;
+router.put('/:diaryId', authenticateJWT, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
+  const id = req.params.diaryId;  // Mengambil diary id dari params
+  const payload = req.body;
+
+  if (!payload.title || !payload.story) {
+    return res.status(400).json({
+      status_code: 400,
+      message: 'Title atau story harus diisi',
+    });
+  }
+
   try {
-    // Membuat diary untuk user yang sedang login
-    const newDiary = await prisma.diary.update({
-      data: {   
-        date: payload.date,
+    const diary = await prisma.diary.findUnique({
+      where: { id: parseInt(id) },
+    });
+    
+    if (!diary) {
+      return res.status(404).json({
+        status_code: 404,
+        message: 'Diary tidak ditemukan',
+      });
+    }
+
+    // Melakukan pembaruan diary
+    const updatedDiary = await prisma.diary.update({
+      where: { id: parseInt(id) },
+      data: {
         title: payload.title,
-        story: payload. story,
-        emotion: payload.emotion, // Optional
+        story: payload.story,
+
+        // TODO: Ambil emotion dari prediksi model
+        // emotion: payload.emotion,
+
+        // TODO: Ambil response dari model
+        // response: payload.response,
+
         updated_at: new Date(),
         userId: userId,  // Menyertakan userId yang didapat dari token
       },
@@ -89,12 +122,8 @@ router.put('/:diaryID', authenticateJWT, async (req, res, next) => {
 
     return res.status(201).json({
       status_code: 201,
-      message: 'Diary berhasil ditambahkan',
-      data: {
-        diaryId: newDiary.diaryId,
-        title: newDiary.title,
-        story: newDiary.story,
-      },
+      message: 'Diary berhasil diedit',
+      data: updatedDiary,
     });
   } catch (err) {
     return next(err);
@@ -104,9 +133,21 @@ router.put('/:diaryID', authenticateJWT, async (req, res, next) => {
 
 // Menghapus diary berdasarkan id
 router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
-  const id = req.params.id;  // Mengambil id diary dari params
+  const id = req.params.diaryId;  // Mengambil diary id dari params
 
   try {
+    const diary = await prisma.diary.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!diary) {
+      return res.status(404).json({
+        status_code: 404,
+        message: 'Diary tidak ditemukan',
+      });
+    }
+
+    // Melakukan penghapusan diary
     const deletedDiary = await prisma.diary.delete({
       where: { id: parseInt(id) },
     });
@@ -122,13 +163,21 @@ router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
 });
 
 // Menampilkan semua diary berdasarkan user id
-router.get('/:userId', authenticateJWT, async (req, res, next) => {
-  const id = req.params.id;  // Mengambil id user dari params
+router.get('/', authenticateJWT, async (req, res, next) => {
+  // Tidak memerlukan parameter karena sudah mengambil dari token
+  const id = req.params.userId;  // Mengambil user id dari params
 
   try {
     const diaries = await prisma.diary.findMany({
-      where: { userId: parseInt(id) },
+      where: { userId: id },
     });
+
+    if (diaries.length === 0) {
+      return res.status(404).json({
+        status_code: 404,
+        message: 'Diary tidak ditemukan',
+      });
+    }
 
     return res.status(200).json({
       status_code: 200,
