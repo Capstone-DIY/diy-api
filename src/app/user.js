@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { authenticateJWT } = require('../middleware.js');
 
 const { PrismaClient } = require('@prisma/client');
@@ -6,8 +7,6 @@ const prisma = new PrismaClient();
 
 const express = require('express');
 const router = express.Router();
-
-// Handler
 
 // Membuat user baru
 router.post('/register', async (req, res, next) => {
@@ -52,6 +51,48 @@ router.post('/register', async (req, res, next) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
+      },
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Login user
+router.post('/', async (req, res, next) => {
+  const payload = req.body;
+
+  try {
+    if (!payload.password) {
+      throw new Error('Password wajib dimasukan');
+    }
+
+    // Mencari email di database dari email di payload
+    const user = await prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    // Membandingkan password yang sudah dihash di database dengan password di payload
+    const isPasswordMatch = await bcrypt.compare(
+      payload.password,
+      user?.password?? ''
+    );
+
+    if (user === null || !isPasswordMatch) {
+      throw new Error('Email atau password salah');
+    }
+
+    const token = jwt.sign({id: user.userId}, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES,
+    });
+
+    return res.status(200).json({
+      status_code: 200,
+      message: 'Login berhasil',
+      data: {
+        token: token,
+        id: user.userId,
+        email: user.email,
       },
     });
   } catch (err) {
