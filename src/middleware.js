@@ -3,7 +3,7 @@ const firebase = require('firebase-admin');
 // Insiasi firebase SDK
 firebase.initializeApp({
   // TODO: Ganti path servieAccountKey.jsonc
-  credential: firebase.credential.cert(require('./serviceAccountKey.json'))
+  credential: firebase.credential.cert(require('../../diy-capstone-eb89d-firebase-adminsdk-gnq0v-0110e924ef.json'))
 });
 
 // Middleware untuk verifikasi token JWT

@@ -10,20 +10,13 @@ const userRouter = require('./src/app/user.js');
 // Diary Routes
 const diaryRouter = require('./src/app/diary.js');
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
 const PORT = process.env.PORT || 8000;
-
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
 checkDatabaseConnection();
-
-// Auth route
-app.use('/login', authRouter);
 
 // User routes
 app.use('/', userRouter);
