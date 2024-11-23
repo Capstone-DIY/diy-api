@@ -1,5 +1,4 @@
 const { authenticateJWT } = require('../middleware.js');
-const { parse } = require('date-fns'); 
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -21,33 +20,10 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
   }
 
   try {
-
-    const parseDate = (dateString) => {
-      // Format yang bisa diterima
-      const formats = [
-        'EEEE, dd - MMMM - yyyy',
-        'EEEE, dd MMMM yyyy',
-        'dd-MM-yyyy',
-        'dd MM yyyy',
-        'dd/MM/yyyy',
-        'yyyy-MM-dd'
-      ];
-
-      for(let formatSting of formats) {
-        const parsedDate = parse(dateString, formatSting, new Date());
-        if(!isNaN(parsedDate)) {
-          // Ubah format yang bisa diterima PostgreSQL
-          return format(parsedDate, 'yyyy-MM-dd');
-        }
-      };
-
-      return null;
-    };
-
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
-        date: payload.date,
+        date:new Date() ,
         title: payload.title,
         story: payload.story,
         
