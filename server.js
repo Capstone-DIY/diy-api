@@ -4,15 +4,11 @@ const cors = require('cors');
 // Connection checker
 const { checkDatabaseConnection } = require('./src/app/checkConnection.js');
 
-// User Routes
-const authRouter = require('./src/app/auth.js');
+// User Routes;
 const userRouter = require('./src/app/user.js');
 
 // Diary Routes
 const diaryRouter = require('./src/app/diary.js');
-
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
 
 const PORT = process.env.PORT || 8000;
 
