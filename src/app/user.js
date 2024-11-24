@@ -85,7 +85,7 @@ router.post('/login', async (req, res, next) => {
       throw new Error('Email atau password salah');
     }
 
-    const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRES,
     });
 

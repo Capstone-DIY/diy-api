@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-// Middleware untuk verifikasi token JWT
-const authenticateJWT = (req, res, next) => {
+const authenticateJWT = async (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];  // Mengambil token dari Authorization header (Bearer <token>)
 
   if (!token) {
@@ -14,7 +15,24 @@ const authenticateJWT = (req, res, next) => {
   try {
     // Verifikasi token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.userId;  // Menyimpan userId dari token pada request object  
+
+    // Ambil userId dari decoded token
+    const userIdFromToken = decoded.id;  // Sesuaikan dengan nama field pada token, biasanya "id" atau "userId"
+
+    // Verifikasi userId di database untuk memastikan user ada
+    const user = await prisma.user.findUnique({
+      where: { id: userIdFromToken },
+    });
+
+    if (!user) {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'User tidak ditemukan, token tidak valid',
+      });
+    }
+
+    // Jika user ditemukan, lanjutkan ke route handler berikutnya
+    req.userId = user.id;  // Menyimpan userId dari token ke request object
     next();  // Lanjut ke route handler berikutnya
   } catch (err) {
     return res.status(403).json({
