@@ -27,13 +27,22 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     });
   }
 
+  // Pembersihan dan pengolahan story
+  let cleanStory = payload.story;
+
+  // Menghapus semua line breaks (\n) dan mengganti dengan spasi
+  cleanStory = cleanStory
+    .replace(/\n+/g, ' ')    // Mengganti semua newline (paragraf) menjadi satu spasi
+    .replace(/\s+/g, ' ')    // Mengganti spasi ganda menjadi satu spasi
+    .trim();                 // Menghilangkan spasi di awal dan akhir
+
   try {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
         date:new Date() ,
         title: payload.title,
-        story: payload.story,
+        story: cleanStory,
         
         // TODO: Ambil emotion dari prediksi model
         emotion: payload.emotion,
