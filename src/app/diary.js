@@ -165,7 +165,7 @@ router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
 // Menampilkan semua diary berdasarkan user id
 router.get('/', authenticateJWT, async (req, res, next) => {
   // Tidak memerlukan parameter karena sudah mengambil dari token
-  const id = req.params.userId;  // Mengambil user id dari params
+  const id = req.userId;  // Mengambil user id dari params
 
   try {
     const diaries = await prisma.diary.findMany({
