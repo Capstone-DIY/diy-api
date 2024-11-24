@@ -1,6 +1,6 @@
-// Import the necessary Firebase modules from Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+// Mengimpor Firebase SDK modular
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -13,43 +13,42 @@ const firebaseConfig = {
   measurementId: "G-RTZM1Y1PPN"
 };
 
-// Initialize Firebase app and Auth
+// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-
+// Event listener untuk login
 document.getElementById('authForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
+  event.preventDefault();  // Cegah form untuk reload halaman
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
   try {
-    // Sign-in with email and password
+    // Menggunakan signInWithEmailAndPassword dari Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     alert('Login berhasil');
 
-    // Get ID token from Firebase
+    // Sembunyikan halaman login dan tampilkan halaman diary
+    document.getElementById('auth').style.display = 'none';  // Menyembunyikan halaman login
+    document.getElementById('diary').style.display = 'block'; // Menampilkan halaman diary
+
+    // Menyimpan token autentikasi
     const user = userCredential.user;
     const token = await user.getIdToken();
-
-    // Save token to localStorage
     localStorage.setItem('authToken', token);
 
-    // Hide login form and show diary form
-    document.getElementById('auth').style.display = 'none';
-    document.getElementById('diary').style.display = 'block';
   } catch (error) {
     alert('Login gagal: ' + error.message);
   }
 });
 
-
+// Event listener untuk register
 document.getElementById('registerBtn').addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
 
   try {
-    // Create a new user with email and password
+    // Menggunakan createUserWithEmailAndPassword dari Firebase Auth
     await createUserWithEmailAndPassword(auth, email, password);
     alert('Pendaftaran berhasil, silakan login');
   } catch (error) {
@@ -57,6 +56,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   }
 });
 
+// Fungsi untuk menyimpan diary
 document.getElementById('saveDiaryBtn').addEventListener('click', async () => {
   const title = document.getElementById('diaryTitle').value;
   const story = document.getElementById('diaryStory').value;

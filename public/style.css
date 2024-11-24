@@ -32,3 +32,11 @@ button {
 button:hover {
   background-color: #f0f0f0;
 }
+
+#diary {
+  display: none;  /* Halaman diary disembunyikan pada awalnya */
+}
+
+#auth {
+  display: block;  /* Halaman login ditampilkan pada awalnya */
+}
