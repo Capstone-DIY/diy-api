@@ -10,6 +10,14 @@ const router = express.Router();
 router.post('/create', authenticateJWT, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
+  // Cek user id
+  if (!userId) {
+    return res.status(400).json({
+      status_code: 400,
+      message: 'UserId tidak ditemukan',
+    });
+  }
+
   const payload = req.body;
 
   if (!payload.title || !payload.story) {
@@ -19,13 +27,22 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     });
   }
 
+  // Pembersihan dan pengolahan story
+  let cleanStory = payload.story;
+
+  // Menghapus semua line breaks (\n) dan mengganti dengan spasi
+  cleanStory = cleanStory
+    .replace(/\n+/g, ' ')    // Mengganti semua newline (paragraf) menjadi satu spasi
+    .replace(/\s+/g, ' ')    // Mengganti spasi ganda menjadi satu spasi
+    .trim();                 // Menghilangkan spasi di awal dan akhir
+
   try {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
         date:new Date() ,
         title: payload.title,
-        story: payload.story,
+        story: cleanStory,
         
         // TODO: Ambil emotion dari prediksi model
         emotion: payload.emotion,
@@ -40,7 +57,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
       status_code: 201,
       message: 'Diary berhasil ditambahkan',
       data: {
-        diaryId: newDiary.diaryId,
+        diaryId: newDiary.id,
         title: newDiary.title,
         story: newDiary.story,
       },
