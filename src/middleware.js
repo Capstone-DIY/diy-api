@@ -14,7 +14,7 @@ const authenticateJWT = (req, res, next) => {
   try {
     // Verifikasi token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;  // Menyimpan userId dari token pada request object
+    req.userId = decoded.userId;  // Menyimpan userId dari token pada request object  
     next();  // Lanjut ke route handler berikutnya
   } catch (err) {
     return res.status(403).json({

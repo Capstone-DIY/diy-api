@@ -10,6 +10,14 @@ const router = express.Router();
 router.post('/create', authenticateJWT, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
+  // Cek user id
+  if (!userId) {
+    return res.status(400).json({
+      status_code: 400,
+      message: 'UserId tidak ditemukan',
+    });
+  }
+
   const payload = req.body;
 
   if (!payload.title || !payload.story) {
@@ -40,7 +48,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
       status_code: 201,
       message: 'Diary berhasil ditambahkan',
       data: {
-        diaryId: newDiary.diaryId,
+        diaryId: newDiary.id,
         title: newDiary.title,
         story: newDiary.story,
       },
