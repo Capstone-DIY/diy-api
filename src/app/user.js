@@ -109,10 +109,6 @@ router.get('/user/:id', authenticateJWT, async (req, res, next) => {
   const { id } = req.params;
   
   try {
-
-    console.log(req.userId);
-    console.log(id);
-
     // Mengecek apakah id user dari token sama dengan user id yang diinginkan
     if (parseInt(id) !== req.userId) {
       return res.status(403).json({
