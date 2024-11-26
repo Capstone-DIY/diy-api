@@ -6,6 +6,15 @@ const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
 
+const { getEmotion } = require('../services/inferenceService');
+const loadModel = require('../services/loadModel');
+let model;
+
+async function initModel() {
+  model = await loadModel();
+};
+initModel();
+
 // Membuat diary baru
 router.post('/create', authenticateJWT, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
@@ -37,6 +46,9 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     .trim();                 // Menghilangkan spasi di awal dan akhir
 
   try {
+    // Mengambil prediksi emosi dari model
+    const emotion = await getEmotion(model, cleanStory);
+
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
@@ -45,7 +57,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
         story: cleanStory,
         
         // TODO: Ambil emotion dari prediksi model
-        emotion: payload.emotion,
+        emotion: emotion,
 
         created_at: new Date(),
         updated_at: new Date(),
@@ -60,6 +72,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
         diaryId: newDiary.id,
         title: newDiary.title,
         story: newDiary.story,
+        emotion: newDiary.emotion,
       },
     });
   } catch (err) {

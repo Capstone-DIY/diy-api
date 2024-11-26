@@ -1,8 +1,19 @@
 const express = require('express');
+const app = express();
 const cors = require('cors');
+const PORT = process.env.PORT || 8000;
 
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
+
+// Load model
+const loadModel = require('./services/loadModel.js');
+let model;
+
+async function initModel() {
+  model = await loadModel();
+  console.log('Model siap digunakan');
+}
 
 // User Routes
 const userRouter = require('./server/user.js');
@@ -10,9 +21,8 @@ const userRouter = require('./server/user.js');
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
 
-const PORT = process.env.PORT || 8000;
 
-const app = express();
+initModel();
 
 app.use(cors());
 app.use(express.json());
