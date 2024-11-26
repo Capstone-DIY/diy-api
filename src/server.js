@@ -2,13 +2,13 @@ const express = require('express');
 const cors = require('cors');
 
 // Connection checker
-const { checkDatabaseConnection } = require('./src/app/checkConnection.js');
+const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
 // User Routes
-const userRouter = require('./src/app/user.js');
+const userRouter = require('./server/user.js');
 
 // Diary Routes
-const diaryRouter = require('./src/app/diary.js');
+const diaryRouter = require('./server/diary.js');
 
 const PORT = process.env.PORT || 8000;
 
