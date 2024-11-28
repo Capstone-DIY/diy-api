@@ -6,14 +6,14 @@ const PORT = process.env.PORT || 8000;
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
-// Load model
-const loadModel = require('./services/loadModel.js');
-let model;
+// TODO: Load model
+// const loadModel = require('./services/loadModel.js');
+// let model;
 
-async function initModel() {
-  model = await loadModel();
-  console.log('Model siap digunakan');
-}
+// async function initModel() {
+//   model = await loadModel();
+//   console.log('Model siap digunakan');
+// }
 
 // User Routes
 const userRouter = require('./server/user.js');
