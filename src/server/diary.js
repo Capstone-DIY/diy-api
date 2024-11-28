@@ -58,7 +58,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
         
         // TODO: Ambil emotion dari prediksi model
         emotion: emotion,
-
+        
         created_at: new Date(),
         updated_at: new Date(),
         userId: userId,  // Menyertakan userId yang didapat dari token
