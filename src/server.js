@@ -11,18 +11,17 @@ const { checkDatabaseConnection } = require('./services/checkConnection.js');
 // let model;
 
 // async function initModel() {
-//   model = await loadModel();
-//   console.log('Model siap digunakan');
-// }
+  //   model = await loadModel();
+  //   console.log('Model siap digunakan');
+  // }
+  
+  // initModel();
 
 // User Routes
 const userRouter = require('./server/user.js');
 
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
-
-
-// initModel();
 
 app.use(cors());
 app.use(express.json());
