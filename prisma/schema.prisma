@@ -8,13 +8,15 @@ datasource db {
 }
 
 model User {
-  id              Int         @id @default(autoincrement()) 
+  id              Int         @id @default(autoincrement())
   email           String      @unique @db.VarChar(64)
   username        String?     @unique
-  password        String
+  password        String      @db.VarChar(255)
   name            String?
+  contact_number  String?     // Menambahkan kolom untuk nomor kontak
   dob             DateTime?   @db.Date
   gender          String?
+  firebaseUid     String?     // Menandakan bahwa firebaseUid nullable
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
   diaries         Diary[]     @relation("UserDiaries")
@@ -22,6 +24,7 @@ model User {
 
   @@map("user")
 }
+
 
 model Diary {
   id              Int         @id @default(autoincrement())

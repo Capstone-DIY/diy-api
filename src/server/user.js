@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const firebase = require('../services/firebase.js');
 const { authenticateJWT } = require('../middleware.js');
 
@@ -19,27 +18,35 @@ router.post('/register', async (req, res, next) => {
         message: 'Email dan password harus diisi',
       });
     }
-
-    // Melakukan pengecekan email yang terdaftar
-    const existingUser = await prisma.user.findUnique({
-      where: { email: payload.email },
-    });
-
+    
+    // Cek apakah email sudah terdaftar di Firebase
+    const existingUser = await firebase.auth().getUserByEmail(payload.email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
         message: 'Email sudah terdaftar',
       });
     }
+     
+    // Menciptakan pengguna di Firebase Authentication
+    const userRecord = await firebase.auth().createUser({
+      email: payload.email,
+      password: payload.password,
+      name: payload.name,
+      contact_number: payload.contact_number,
+    });
 
     // Membuat user baru
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.user.create({  
       data: {
         name: payload.name,
         email: payload.email,
         password: '', // Tidak perlu menyimpan password karena menggunakan Firebase Authentication
+        contact_number: payload.contact_number,
+        firebaseUid: userRecord.uid,  // Menyimpan UID pengguna dari Firebase
       },
     });
+    
 
     return res.status(201).json({
       status_code: 201,
