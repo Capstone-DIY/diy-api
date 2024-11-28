@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const firebase = require('../services/firebase.js');
 const { authenticateJWT } = require('../middleware.js');
 
 const { PrismaClient } = require('@prisma/client');
@@ -32,15 +32,12 @@ router.post('/register', async (req, res, next) => {
       });
     }
 
-    // Hash password sebelum dimasukan ke database
-    const hashedPassword = await bcrypt.hash(payload.password, 10);
-
     // Membuat user baru
     const newUser = await prisma.user.create({
       data: {
         name: payload.name,
         email: payload.email,
-        password: hashedPassword,
+        password: '', // Tidak perlu menyimpan password karena menggunakan Firebase Authentication
       },
     });
 
@@ -70,24 +67,18 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Mencari email di database dari email di payload
-    const user = await prisma.user.findUnique({
-      where: { email: payload.email },
-    });
+    // Verifikasi kredensial dengan Firebase Authentication
+    const user = await admin.auth().getUserByEmail(payload.email);
 
-    // Membandingkan password yang sudah dihash di database dengan password di payload
-    const isPasswordMatch = await bcrypt.compare(
-      payload.password,
-      user?.password?? ''
-    );
-
-    if (user === null || !isPasswordMatch) {
-      throw new Error('Email atau password salah');
+    if (!user) {
+      return res.status(400).json({
+        status_code: 400,
+        message: 'Email atau password salah',
+      });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES,
-    });
+    // Autentikasi password menggunakan Firebase Authentication
+    const token = await admin.auth().createCustomToken(user.id)
 
     return res.status(200).json({
       status_code: 200,

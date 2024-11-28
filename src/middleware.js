@@ -1,4 +1,5 @@
-const jwt = require('jsonwebtoken');
+const firebase = require('./services/firebase.js');
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -14,10 +15,10 @@ const authenticateJWT = async (req, res, next) => {
 
   try {
     // Verifikasi token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    const decodedToken = await firebase.auth().verifyIdToken(token); // Verifikasi token menggunakan Firebase
+    
     // Ambil userId dari decoded token
-    const userIdFromToken = decoded.id;  // Sesuaikan dengan nama field pada token, biasanya "id" atau "userId"
+    const userIdFromToken = decodedToken.uid;
 
     // Verifikasi userId di database untuk memastikan user ada
     const user = await prisma.user.findUnique({
