@@ -22,7 +22,7 @@ const userRouter = require('./server/user.js');
 const diaryRouter = require('./server/diary.js');
 
 
-initModel();
+// initModel();
 
 app.use(cors());
 app.use(express.json());
