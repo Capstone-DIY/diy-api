@@ -4,6 +4,15 @@ const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
 
+// const { getEmotion } = require('../services/inferenceService');
+// const loadModel = require('../services/loadModel');
+// let model;
+
+// async function initModel() {
+//   model = await loadModel();
+// };
+// initModel();
+
 // Membuat diary baru
 router.post('/create', verifyIdToken, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
@@ -46,7 +55,7 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
         story: cleanStory,
         
         // TODO: Ambil emotion dari prediksi model
-        emotion: payload.emotion,
+        // emotion: emotion,
 
         created_at: new Date(),
         updated_at: new Date(),
