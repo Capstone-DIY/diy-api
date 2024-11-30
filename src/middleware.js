@@ -1,11 +1,12 @@
-const jwt = require('jsonwebtoken');
+const firebase = require('./services/firebase.js');
+
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const authenticateJWT = async (req, res, next) => {
-  const token = req.header('Authorization')?.split(' ')[1];  // Mengambil token dari Authorization header (Bearer <token>)
+const verifyIdToken = async (req, res, next) => {
+  const idToken = req.header('Authorization')?.split(' ')[1];
 
-  if (!token) {
+  if (!idToken) {
     return res.status(401).json({
       status_code: 401,
       message: 'Token tidak ditemukan, silakan login terlebih dahulu',
@@ -13,11 +14,8 @@ const authenticateJWT = async (req, res, next) => {
   }
 
   try {
-    // Verifikasi token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Ambil userId dari decoded token
-    const userIdFromToken = decoded.id;  // Sesuaikan dengan nama field pada token, biasanya "id" atau "userId"
+    const decodedToken = await firebase.auth().verifyIdToken(idToken); // Verifikasi token dengan Firebase
+    const userIdFromToken = decodedToken.uid;
 
     // Verifikasi userId di database untuk memastikan user ada
     const user = await prisma.user.findUnique({
@@ -30,16 +28,22 @@ const authenticateJWT = async (req, res, next) => {
         message: 'User tidak ditemukan, token tidak valid',
       });
     }
-
-    // Jika user ditemukan, lanjutkan ke route handler berikutnya
+    
     req.userId = user.id;  // Menyimpan userId dari token ke request object
     next();  // Lanjut ke route handler berikutnya
   } catch (err) {
-    return res.status(403).json({
-      status_code: 403,
-      message: 'Token tidak valid atau telah kadaluarsa',
+    if (err.code === 'auth/argument-error' || err.code === 'auth/id-token-expired') {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Token tidak valid atau telah kadaluarsa',
+      });
+    }
+    
+    return res.status(500).json({
+      status_code: 500,
+      message: 'Terjadi kesalahan saat verifikasi token',
     });
   }
 };
 
-module.exports = { authenticateJWT };
+module.exports = { verifyIdToken };

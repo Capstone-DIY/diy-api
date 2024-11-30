@@ -1,21 +1,23 @@
+const { initializeFirebase } = require('./services/firebase.js');
+
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
-// Load model
+// TODO: Load model
 // const loadModel = require('./services/loadModel.js');
 // let model;
 
 // async function initModel() {
-//   model = await loadModel();
-//   console.log('Model siap digunakan');
-// }
-
-// initModel();
+  //   model = await loadModel();
+  //   console.log('Model siap digunakan');
+  // }
+  
+  // initModel();
 
 // User Routes
 const userRouter = require('./server/user.js');

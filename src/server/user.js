@@ -1,6 +1,5 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { authenticateJWT } = require('../middleware.js');
+const firebase = require('../services/firebase.js');
+const { verifyIdToken } = require('../middleware.js');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -19,30 +18,34 @@ router.post('/register', async (req, res, next) => {
         message: 'Email dan password harus diisi',
       });
     }
-
-    // Melakukan pengecekan email yang terdaftar
-    const existingUser = await prisma.user.findUnique({
-      where: { email: payload.email },
-    });
-
+    
+    // Cek apakah email sudah terdaftar di Firebase
+    const existingUser = await firebase.auth().getUserByEmail(payload.email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
         message: 'Email sudah terdaftar',
       });
     }
-
-    // Hash password sebelum dimasukan ke database
-    const hashedPassword = await bcrypt.hash(payload.password, 10);
+     
+    // Menciptakan pengguna di Firebase Authentication
+    const userRecord = await firebase.auth().createUser({
+      email: payload.email,
+      password: payload.password,
+      name: payload.name,
+      contact_number: payload.contact_number,
+    });
 
     // Membuat user baru
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.user.create({  
       data: {
         name: payload.name,
         email: payload.email,
-        password: hashedPassword,
+        password: '', // Tidak perlu menyimpan password karena menggunakan Firebase Authentication
+        contact_number: payload.contact_number,
       },
     });
+    
 
     return res.status(201).json({
       status_code: 201,
@@ -70,24 +73,18 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Mencari email di database dari email di payload
-    const user = await prisma.user.findUnique({
-      where: { email: payload.email },
-    });
+    // Verifikasi kredensial dengan Firebase Authentication
+    const user = await admin.auth().getUserByEmail(payload.email);
 
-    // Membandingkan password yang sudah dihash di database dengan password di payload
-    const isPasswordMatch = await bcrypt.compare(
-      payload.password,
-      user?.password?? ''
-    );
-
-    if (user === null || !isPasswordMatch) {
-      throw new Error('Email atau password salah');
+    if (!user) {
+      return res.status(400).json({
+        status_code: 400,
+        message: 'Email atau password salah',
+      });
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES,
-    });
+    // Autentikasi password menggunakan Firebase Authentication
+    const token = await admin.auth().createCustomToken(user.id)
 
     return res.status(200).json({
       status_code: 200,
@@ -105,9 +102,9 @@ router.post('/login', async (req, res, next) => {
 
 
 // Get user berdasarkan ID (dengan JWT Authentication)
-router.get('/user/:id', authenticateJWT, async (req, res, next) => {
+router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
-  
+
   try {
     // Mengecek apakah id user dari token sama dengan user id yang diinginkan
     if (parseInt(id) !== req.userId) {
