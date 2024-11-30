@@ -1,23 +1,11 @@
-const { authenticateJWT } = require('../middleware.js');
-
+const { verifyIdToken } = require('../middleware.js'); // Import middleware yang benar
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
 const express = require('express');
 const router = express.Router();
 
-// TODO: Load model
-// const { getEmotion } = require('../services/inferenceService');
-// const loadModel = require('../services/loadModel');
-// let model;
-
-// async function initModel() {
-//   model = await loadModel();
-// };
-// initModel();
-
 // Membuat diary baru
-router.post('/create', authenticateJWT, async (req, res, next) => {
+router.post('/create', verifyIdToken, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
   // Cek user id
@@ -53,7 +41,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
     // Membuat diary untuk user yang sedang login
     const newDiary = await prisma.diary.create({
       data: {   
-        date:new Date() ,
+        date: new Date(),
         title: payload.title,
         story: cleanStory,
         
@@ -82,7 +70,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
 });
 
 // Menampilkan diary berdasarkan id diary
-router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
+router.get('/:diaryId', verifyIdToken, async (req, res, next) => {
   const id = req.params.diaryId;  // Mengambil diary id dari params
   
   try {
@@ -108,7 +96,7 @@ router.get('/:diaryId', authenticateJWT, async (req, res, next) => {
 });
 
 // Mengedit diary berdasarkan id
-router.put('/:diaryId', authenticateJWT, async (req, res, next) => {
+router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
   const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
 
   const id = req.params.diaryId;  // Mengambil diary id dari params
@@ -161,9 +149,8 @@ router.put('/:diaryId', authenticateJWT, async (req, res, next) => {
   }
 });
 
-
 // Menghapus diary berdasarkan id
-router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
+router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
   const id = req.params.diaryId;  // Mengambil diary id dari params
 
   try {
@@ -194,7 +181,7 @@ router.delete('/:diaryId', authenticateJWT, async (req, res, next) => {
 });
 
 // Menampilkan semua diary berdasarkan user id
-router.get('/', authenticateJWT, async (req, res, next) => {
+router.get('/', verifyIdToken, async (req, res, next) => {
   // Tidak memerlukan parameter karena sudah mengambil dari token
   const id = req.userId;  // Mengambil user id dari params
 

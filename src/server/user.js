@@ -1,5 +1,5 @@
 const firebase = require('../services/firebase.js');
-const { authenticateJWT } = require('../middleware.js');
+const { verifyIdToken } = require('../middleware.js');
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -43,7 +43,6 @@ router.post('/register', async (req, res, next) => {
         email: payload.email,
         password: '', // Tidak perlu menyimpan password karena menggunakan Firebase Authentication
         contact_number: payload.contact_number,
-        firebaseUid: userRecord.uid,  // Menyimpan UID pengguna dari Firebase
       },
     });
     
@@ -103,9 +102,9 @@ router.post('/login', async (req, res, next) => {
 
 
 // Get user berdasarkan ID (dengan JWT Authentication)
-router.get('/user/:id', authenticateJWT, async (req, res, next) => {
+router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
-  
+
   try {
     // Mengecek apakah id user dari token sama dengan user id yang diinginkan
     if (parseInt(id) !== req.userId) {
