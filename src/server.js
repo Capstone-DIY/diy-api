@@ -3,7 +3,7 @@ const { initializeFirebase } = require('./services/firebase.js');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
