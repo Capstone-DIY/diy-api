@@ -28,7 +28,7 @@ steps:
       - 'asia-southeast2-docker.pkg.dev/$PROJECT_ID/diy-api/diy-api-production:$COMMIT_SHA'
       - '--allow-unauthenticated'  # Mengizinkan akses tanpa otentikasi
       - --service-account
-      - 'diy-api-server-production@$PROJECT_ID.iam.gserviceaccount.com'  # Ganti dengan service account Anda
+      - 'cloud-run-diy-capstone-dev@diy-capstone-dev.iam.gserviceaccount.com'  # Ganti dengan service account Anda
       - '--region'
       - 'asia-southeast2'  # Ganti dengan region yang sesuai
       - '--cpu'
