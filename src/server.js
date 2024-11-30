@@ -7,22 +7,21 @@ const PORT = process.env.PORT || 8000;
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
 // Load model
-const loadModel = require('./services/loadModel.js');
-let model;
+// const loadModel = require('./services/loadModel.js');
+// let model;
 
-async function initModel() {
-  model = await loadModel();
-  console.log('Model siap digunakan');
-}
+// async function initModel() {
+//   model = await loadModel();
+//   console.log('Model siap digunakan');
+// }
+
+// initModel();
 
 // User Routes
 const userRouter = require('./server/user.js');
 
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
-
-
-initModel();
 
 app.use(cors());
 app.use(express.json());

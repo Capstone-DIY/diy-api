@@ -6,14 +6,14 @@ const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
 
-const { getEmotion } = require('../services/inferenceService');
-const loadModel = require('../services/loadModel');
-let model;
+// const { getEmotion } = require('../services/inferenceService');
+// const loadModel = require('../services/loadModel');
+// let model;
 
-async function initModel() {
-  model = await loadModel();
-};
-initModel();
+// async function initModel() {
+//   model = await loadModel();
+// };
+// initModel();
 
 // Membuat diary baru
 router.post('/create', authenticateJWT, async (req, res, next) => {
@@ -57,7 +57,7 @@ router.post('/create', authenticateJWT, async (req, res, next) => {
         story: cleanStory,
         
         // TODO: Ambil emotion dari prediksi model
-        emotion: emotion,
+        // emotion: emotion,
 
         created_at: new Date(),
         updated_at: new Date(),
