@@ -40,7 +40,7 @@ steps:
       - '--max-instances'
       - '2'  # Maksimal dua instances untuk development
 
-    secretEnv: ['DATABASE_URL', 'FIREBASE_SERVICE_ACCOUNT', 'JWT_SECRET']  # Mendeklarasikan variabel lingkungan untuk secrets
+    secretEnv: ['DATABASE_URL', 'FIREBASE_SERVICE_ACCOUNT']  # Mendeklarasikan variabel lingkungan untuk secrets
 
 options:
   logging: CLOUD_LOGGING_ONLY  # Menggunakan Cloud Logging
