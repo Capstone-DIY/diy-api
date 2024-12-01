@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "generate": "prisma generate",
-    "start": "npm run generate && node src/server.js"
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
