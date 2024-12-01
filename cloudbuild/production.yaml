@@ -51,7 +51,7 @@ images:
 availableSecrets:
   secretManager:
     # Menyimpan secret di Google Cloud Secret Manager dan menjadikannya variabel lingkungan
-    - versionName: projects/diy-capstone-dev/secrets/diy-api-database-url/versions/latest
+    - versionName: projects/diy-capstone-dev/secrets/database-url/versions/latest
       env: 'DATABASE_URL'  # Menetapkan SECRET untuk DATABASE_URL
-    - versionName: projects/diy-capstone-dev/secrets/diy-api-firebase-service-account/versions/latest
+    - versionName: projects/diy-capstone-dev/secrets/firebase-service-account/versions/latest
       env: 'FIREBASE_SERVICE_ACCOUNT'  # Menetapkan secret untuk Firebase Service Account JSON
