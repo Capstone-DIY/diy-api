@@ -1,15 +1,32 @@
-FROM node:18 AS build
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npx prisma migrate deploy
+# Stage 1: Build the app
+FROM node:18-alpine as build
 
-FROM node:18
-WORKDIR /usr/src/app
-COPY --from=build /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/prisma ./prisma
-COPY --from=build /usr/src/app/src ./src
-COPY --from=build /usr/src/app/package.json ./
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Stage 2: Create final image
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install production dependencies only
+COPY package.json package-lock.json ./
+RUN npm install --only=production
+
+# Copy app code from the build stage
+COPY --from=build /app /app
+
+# Expose the port the app will run on
 EXPOSE 8080
-CMD ["npm", "start"]
+
+# Command to run the app
+CMD ["npm", "run", "start"]

@@ -16,7 +16,6 @@ model User {
   contact_number  String?     // Menambahkan kolom untuk nomor kontak
   dob             DateTime?   @db.Date
   gender          String?
-  firebaseUid     String?     // Menandakan bahwa firebaseUid nullable
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
   diaries         Diary[]     @relation("UserDiaries")
