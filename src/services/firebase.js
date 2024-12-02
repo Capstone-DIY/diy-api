@@ -1,7 +1,5 @@
-// services/firebase.js
-
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-const firebaseAdmin = require('firebase-admin');
+const firebase = require('firebase-admin');
 
 // Initialize Secret Manager client
 const client = new SecretManagerServiceClient();
@@ -39,4 +37,4 @@ async function initializeFirebase() {
 }
 
 
-module.exports = { initializeFirebase, firebaseAdmin };
+module.exports = { initializeFirebase, firebase };

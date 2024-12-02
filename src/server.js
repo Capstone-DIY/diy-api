@@ -8,14 +8,14 @@ const PORT = process.env.PORT || 8080;
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
+// Initialize Firebase before the app starts
+initializeFirebase();
+
 // User Routes
 const userRouter = require('./server/user.js');
 
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
-
-// Initialize Firebase before the app starts
-initializeFirebase();  // This ensures Firebase is initialized before the routes
 
 app.use(cors());
 app.use(express.json());
