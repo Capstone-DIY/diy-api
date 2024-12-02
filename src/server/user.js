@@ -1,4 +1,4 @@
-const { firebaseAdmin } = require('../services/firebase.js'); // Import the firebaseAdmin instance
+const { firebase } = require('../services/firebase.js');
 const { verifyIdToken } = require('../middleware.js');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ router.post('/register', async (req, res, next) => {
     }
     
     // Check if email already exists in Firebase
-    const existingUser = await firebaseAdmin.auth().getUserByEmail(payload.email).catch(() => null);
+    const existingUser = await firebase.auth().getUserByEmail(payload.email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
@@ -27,7 +27,7 @@ router.post('/register', async (req, res, next) => {
     }
      
     // Create a user in Firebase Authentication
-    const userRecord = await firebaseAdmin.auth().createUser({
+    const userRecord = await firebase.auth().createUser({
       email: payload.email,
       password: payload.password,
       displayName: payload.name,
@@ -71,7 +71,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     // Get the user by email from Firebase Authentication
-    const user = await firebaseAdmin.auth().getUserByEmail(payload.email);
+    const user = await firebase.auth().getUserByEmail(payload.email);
 
     if (!user) {
       return res.status(400).json({
@@ -84,7 +84,7 @@ router.post('/login', async (req, res, next) => {
     // Firebase Admin does not support password verification directly,
     // Instead, use Firebase client-side SDK for password authentication (on your Android app, for example).
     // Create a custom token to use as a JWT
-    const token = await firebaseAdmin.auth().createCustomToken(user.uid);
+    const token = await firebase.auth().createCustomToken(user.uid);
 
     return res.status(200).json({
       status_code: 200,

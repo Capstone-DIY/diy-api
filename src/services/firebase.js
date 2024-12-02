@@ -1,6 +1,7 @@
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const firebase = require('firebase-admin');
 
+
 // Initialize Secret Manager client
 const client = new SecretManagerServiceClient();
 
