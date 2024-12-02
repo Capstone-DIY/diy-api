@@ -1,5 +1,4 @@
 const { initializeFirebase } = require('./services/firebase.js');
-
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -8,35 +7,32 @@ const PORT = process.env.PORT || 8080;
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
-// TODO: Load model
-// const loadModel = require('./services/loadModel.js');
-// let model;
-
-// async function initModel() {
-  //   model = await loadModel();
-  //   console.log('Model siap digunakan');
-  // }
-  
-  // initModel();
-
 // User Routes
 const userRouter = require('./server/user.js');
 
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Route untuk root path ("/")
+app.get('/', (req, res) => {
+  res.send('Welcome to the DIY API!'); // Menampilkan pesan selamat datang
+});
+
+// Check database connection
 checkDatabaseConnection();
 
 // User routes
-app.use('/', userRouter);
+app.use('/user', userRouter);
 
 // Diary routes
 app.use('/diary', diaryRouter);
 
-app.use((err, res) => {
+// Global error handling middleware
+app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({
     status_code: 500,
@@ -45,6 +41,7 @@ app.use((err, res) => {
   });
 });
 
+// Start server
 app.listen(PORT, () => {
   console.log(`App running on PORT ${PORT}.`);
 });
