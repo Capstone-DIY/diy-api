@@ -25,21 +25,18 @@ async function getSecret(secretName) {
 async function initializeFirebase() {
   try {
     const serviceAccount = await getSecret('firebase-service-account');
+    console.log('Service Account:', serviceAccount);  // Log the service account
 
-    // Initialize Firebase only if it hasn't been initialized already
-    if (!firebaseAdmin.apps.length) {
-      firebaseAdmin.initializeApp({
-        credential: firebaseAdmin.credential.cert(serviceAccount),
-      });
+    firebase.initializeApp({
+      credential: firebase.credential.cert(serviceAccount),
+    });
 
-      console.log('Firebase initialized');
-    } else {
-      console.log('Firebase already initialized');
-    }
+    console.log('Firebase initialized');
   } catch (error) {
     console.error('Error initializing Firebase:', error);
     throw new Error('Firebase initialization failed');
   }
 }
+
 
 module.exports = { initializeFirebase, firebaseAdmin };
