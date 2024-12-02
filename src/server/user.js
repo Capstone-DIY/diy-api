@@ -1,13 +1,11 @@
-const firebase = require('../services/firebase.js');
+const { firebaseAdmin } = require('../services/firebase.js'); // Import the firebaseAdmin instance
 const { verifyIdToken } = require('../middleware.js');
-
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-
 const express = require('express');
 const router = express.Router();
 
-// Membuat user baru
+// Register a new user
 router.post('/register', async (req, res, next) => {
   const payload = req.body;
 
@@ -19,8 +17,8 @@ router.post('/register', async (req, res, next) => {
       });
     }
     
-    // Cek apakah email sudah terdaftar di Firebase
-    const existingUser = await firebase.auth().getUserByEmail(payload.email).catch(() => null);
+    // Check if email already exists in Firebase
+    const existingUser = await firebaseAdmin.auth().getUserByEmail(payload.email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({
         status_code: 400,
@@ -28,25 +26,24 @@ router.post('/register', async (req, res, next) => {
       });
     }
      
-    // Menciptakan pengguna di Firebase Authentication
-    const userRecord = await firebase.auth().createUser({
+    // Create a user in Firebase Authentication
+    const userRecord = await firebaseAdmin.auth().createUser({
       email: payload.email,
       password: payload.password,
-      name: payload.name,
-      contact_number: payload.contact_number,
+      displayName: payload.name,
+      phoneNumber: payload.contact_number,
     });
 
-    // Membuat user baru
+    // Create a new user in the database
     const newUser = await prisma.user.create({  
       data: {
         name: payload.name,
         email: payload.email,
-        password: '', // Tidak perlu menyimpan password karena menggunakan Firebase Authentication
+        password: '', // Do not store password because using Firebase Authentication
         contact_number: payload.contact_number,
       },
     });
     
-
     return res.status(201).json({
       status_code: 201,
       message: 'Pengguna berhasil ditambahkan',
@@ -61,7 +58,7 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-// Login user
+// Login a user
 router.post('/login', async (req, res, next) => {
   const payload = req.body;
 
@@ -73,8 +70,8 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Verifikasi kredensial dengan Firebase Authentication
-    const user = await admin.auth().getUserByEmail(payload.email);
+    // Get the user by email from Firebase Authentication
+    const user = await firebaseAdmin.auth().getUserByEmail(payload.email);
 
     if (!user) {
       return res.status(400).json({
@@ -83,15 +80,18 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Autentikasi password menggunakan Firebase Authentication
-    const token = await admin.auth().createCustomToken(user.id)
+    // Authenticate the password using Firebase Authentication
+    // Firebase Admin does not support password verification directly,
+    // Instead, use Firebase client-side SDK for password authentication (on your Android app, for example).
+    // Create a custom token to use as a JWT
+    const token = await firebaseAdmin.auth().createCustomToken(user.uid);
 
     return res.status(200).json({
       status_code: 200,
       message: 'Login berhasil',
       data: {
         token: token,
-        id: user.id,
+        id: user.uid,
         email: user.email,
       },
     });
@@ -100,13 +100,12 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-
-// Get user berdasarkan ID (dengan JWT Authentication)
+// Get user by ID with JWT Authentication
 router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    // Mengecek apakah id user dari token sama dengan user id yang diinginkan
+    // Ensure that the user ID from the token matches the requested user ID
     if (parseInt(id) !== req.userId) {
       return res.status(403).json({
         status_code: 403,
@@ -114,7 +113,7 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
       });
     }
 
-    // Mengambil user data dari database
+    // Get the user data from the database
     const user = await prisma.user.findUnique({
       where: { id: parseInt(id) },
     });
@@ -131,7 +130,8 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
       message: 'Pengguna ditemukan',
       data: {
         id: user.id,
-        username: user.username,
+        name: user.name,
+        email: user.email,
       },
     });
   } catch (err) {
