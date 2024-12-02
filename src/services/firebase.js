@@ -1,3 +1,5 @@
+// services/firebase.js
+
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 const firebase = require('firebase-admin');
 
@@ -40,9 +42,4 @@ async function initializeFirebase() {
   }
 }
 
-// Ensure Firebase is initialized before app starts
-(async () => {
-  await initializeFirebase();
-})();
-
-module.exports = firebase;
+module.exports = { initializeFirebase, firebase };

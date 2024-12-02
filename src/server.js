@@ -1,4 +1,4 @@
-const { initializeFirebase } = require('./services/firebase.js');
+const { initializeFirebase } = require('./services/firebase.js'); // Ensure Firebase is initialized
 
 const express = require('express');
 const app = express();
@@ -8,22 +8,14 @@ const PORT = process.env.PORT || 8080;
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
 
-// TODO: Load model
-// const loadModel = require('./services/loadModel.js');
-// let model;
-
-// async function initModel() {
-  //   model = await loadModel();
-  //   console.log('Model siap digunakan');
-  // }
-  
-  // initModel();
-
 // User Routes
 const userRouter = require('./server/user.js');
 
 // Diary Routes
 const diaryRouter = require('./server/diary.js');
+
+// Initialize Firebase before the app starts
+initializeFirebase();  // This ensures Firebase is initialized before the routes
 
 app.use(cors());
 app.use(express.json());
@@ -36,7 +28,8 @@ app.use('/', userRouter);
 // Diary routes
 app.use('/diary', diaryRouter);
 
-app.use((err, res) => {
+// Error Handling middleware (this goes last)
+app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({
     status_code: 500,
