@@ -1,7 +1,7 @@
 // services/firebase.js
 
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-const firebase = require('firebase-admin');
+const firebaseAdmin = require('firebase-admin');
 
 // Initialize Secret Manager client
 const client = new SecretManagerServiceClient();
@@ -27,9 +27,9 @@ async function initializeFirebase() {
     const serviceAccount = await getSecret('firebase-service-account');
 
     // Initialize Firebase only if it hasn't been initialized already
-    if (!firebase.apps.length) {
-      firebase.initializeApp({
-        credential: firebase.credential.cert(serviceAccount),
+    if (!firebaseAdmin.apps.length) {
+      firebaseAdmin.initializeApp({
+        credential: firebaseAdmin.credential.cert(serviceAccount),
       });
 
       console.log('Firebase initialized');
@@ -42,4 +42,4 @@ async function initializeFirebase() {
   }
 }
 
-module.exports = { initializeFirebase, firebase };
+module.exports = { initializeFirebase, firebaseAdmin };

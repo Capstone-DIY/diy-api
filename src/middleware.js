@@ -1,4 +1,5 @@
-const firebase = require('./services/firebase.js');
+// middleware.js
+const { firebaseAdmin } = require('./services/firebase.js'); // Import firebaseAdmin
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -14,7 +15,7 @@ const verifyIdToken = async (req, res, next) => {
   }
 
   try {
-    const decodedToken = await firebase.auth().verifyIdToken(idToken); // Verifikasi token dengan Firebase
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(idToken); // Correct method for firebase-admin
     const userIdFromToken = decodedToken.uid;
 
     // Verifikasi userId di database untuk memastikan user ada
