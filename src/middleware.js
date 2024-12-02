@@ -1,10 +1,19 @@
 // middleware.js
-const { firebase } = require('./services/firebase.js'); // Import firebase
-
+const { firebase, initializeFirebase } = require('./services/firebase.js'); // Import firebase-admin and the initialization function
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const verifyIdToken = async (req, res, next) => {
+  // Ensure Firebase is initialized before proceeding
+  try {
+    await initializeFirebase();  // Wait for initialization to complete
+  } catch (error) {
+    return res.status(500).json({
+      status_code: 500,
+      message: error,
+    });
+  }
+
   const idToken = req.header('Authorization')?.split(' ')[1];
 
   if (!idToken) {
