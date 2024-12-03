@@ -13,9 +13,10 @@ async function getSecret(secretName) {
     });
     
     const payload = version.payload.data.toString('utf8');
+    console.log('Secret Payload:', payload);
     return JSON.parse(payload); // Return the Service Account JSON
   } catch (error) {
-    console.error('Error retrieving secret:', error);
+    console.error(`Error retrieving secret '${secretName}':`, error);
     throw new Error('Error retrieving secret');
   }
 }
