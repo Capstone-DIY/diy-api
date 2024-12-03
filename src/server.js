@@ -1,4 +1,6 @@
 const { initializeFirebase } = require('./services/firebase.js'); // Ensure Firebase is initialized
+// Initialize Firebase before the app starts
+initializeFirebase();
 
 const express = require('express');
 const app = express();
@@ -7,9 +9,6 @@ const PORT = process.env.PORT || 8080;
 
 // Connection checker
 const { checkDatabaseConnection } = require('./services/checkConnection.js');
-
-// Initialize Firebase before the app starts
-initializeFirebase();
 
 // User Routes
 const userRouter = require('./server/user.js');
