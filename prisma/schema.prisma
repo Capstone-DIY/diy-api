@@ -12,6 +12,7 @@ model User {
   email           String      @unique @db.VarChar(64)
   username        String?     @unique
   password        String      @db.VarChar(255)
+  firebase_uid    String?     @unique
   name            String?
   contact_number  String?     // Menambahkan kolom untuk nomor kontak
   dob             DateTime?   @db.Date
@@ -23,7 +24,6 @@ model User {
 
   @@map("user")
 }
-
 
 model Diary {
   id              Int         @id @default(autoincrement())

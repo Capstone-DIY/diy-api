@@ -1,5 +1,5 @@
 // middleware.js
-const { firebase, initializeFirebase } = require('./services/firebase.js'); // Import firebase-admin and the initialization function
+const { firebase } = require('./services/firebase.js');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -9,39 +9,39 @@ const verifyIdToken = async (req, res, next) => {
   if (!idToken) {
     return res.status(401).json({
       status_code: 401,
-      message: 'Token tidak ditemukan, silakan login terlebih dahulu',
+      message: 'Unauthorized Token',
     });
   }
 
   try {
-    const decodedToken = await firebase.auth().verifyIdToken(idToken); // Correct method for firebase-admin
-    const userIdFromToken = decodedToken.uid;
+    const decodedToken = await firebase.auth().verifyIdToken(idToken);
+    const userUid = decodedToken.uid;
 
-    // Verifikasi userId di database untuk memastikan user ada
+    // Verifikasi userUid di database untuk memastikan user ada
     const user = await prisma.user.findUnique({
-      where: { id: userIdFromToken },
+      where: { firebase_uid: userUid },
     });
 
     if (!user) {
       return res.status(403).json({
         status_code: 403,
-        message: 'User tidak ditemukan, token tidak valid',
+        message: 'User not found, invalid token',
       });
     }
     
-    req.userId = user.id;  // Menyimpan userId dari token ke request object
-    next();  // Lanjut ke route handler berikutnya
+    req.userUid = user.firebase_uid;
+    next()
   } catch (err) {
     if (err.code === 'auth/argument-error' || err.code === 'auth/id-token-expired') {
       return res.status(403).json({
         status_code: 403,
-        message: 'Token tidak valid atau telah kadaluarsa',
+        message: 'Invalid token or token expired',
       });
     }
     
     return res.status(500).json({
       status_code: 500,
-      message: 'Terjadi kesalahan saat verifikasi token',
+      message: 'Token verification failed',
     });
   }
 };

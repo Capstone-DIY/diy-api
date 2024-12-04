@@ -16,8 +16,7 @@ router.post('/register', async (req, res, next) => {
         message: 'Email dan password harus diisi',
       });
     }
-    
-    // Check if email already exists in Firebase
+
     const existingUser = await firebase.auth().getUserByEmail(payload.email).catch(() => null);
     if (existingUser) {
       return res.status(400).json({
@@ -25,32 +24,30 @@ router.post('/register', async (req, res, next) => {
         message: 'Email sudah terdaftar',
       });
     }
-     
-    // Create a user in Firebase Authentication
+
     const userRecord = await firebase.auth().createUser({
       email: payload.email,
       password: payload.password,
-      displayName: payload.name,
-      phoneNumber: payload.contact_number,
     });
-
-    // Create a new user in the database
+    
     const newUser = await prisma.user.create({  
       data: {
         name: payload.name,
         email: payload.email,
-        password: '', // Do not store password because using Firebase Authentication
+        password: '',
+        firebase_uid: userRecord.uid,
         contact_number: payload.contact_number,
       },
     });
     
     return res.status(201).json({
       status_code: 201,
-      message: 'Pengguna berhasil ditambahkan',
+      message: 'User successfully registered',
       data: {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
+        firebase_uid: newUser.firebase_uid,
       },
     });
   } catch (err) {
@@ -66,17 +63,16 @@ router.post('/login', async (req, res, next) => {
     if (!payload.email || !payload.password) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Email dan password harus diisi',
+        message: 'Username and password must be filled',
       });
     }
-
-    // Get the user by email from Firebase Authentication
+    
     const user = await firebase.auth().getUserByEmail(payload.email);
 
     if (!user) {
       return res.status(400).json({
         status_code: 400,
-        message: 'Email atau password salah',
+        message: 'Wrong Email or Password',
       });
     }
 
@@ -88,11 +84,11 @@ router.post('/login', async (req, res, next) => {
 
     return res.status(200).json({
       status_code: 200,
-      message: 'Login berhasil',
+      message: 'Login successful',
       data: {
-        token: token,
-        id: user.uid,
         email: user.email,
+        firebase_uid: user.uid,
+        token: token,
       },
     });
   } catch (err) {
@@ -100,38 +96,42 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// Get user by ID with JWT Authentication
+// Get user profile by firebase UID with JWT Authentication
 router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
 
+  // Get user firebase ID from database
+  const user = await prisma.user.findUnique({
+    where: { id: parseInt(id) },
+  });
+  const userUid = user.firebase_uid;
+
   try {
-    // Ensure that the user ID from the token matches the requested user ID
-    if (parseInt(id) !== req.userId) {
+    // Check if the user is authorized to access this user
+    if (userUid !== req.userUid) {
       return res.status(403).json({
         status_code: 403,
-        message: 'Tidak dizinkan untuk mengakses user ini',
+        message: 'Unauthorized to access this user',
       });
     }
-
-    // Get the user data from the database
-    const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
-    });
 
     if (!user) {
       return res.status(404).json({
         status_code: 404,
-        message: 'Pengguna tidak ditemukan',
+        message: 'User profile not found',
       });
     }
 
     return res.status(200).json({
       status_code: 200,
-      message: 'Pengguna ditemukan',
+      message: 'User profile found',
       data: {
         id: user.id,
         name: user.name,
         email: user.email,
+        name: user.name,
+        contact_number: user.contact_number,
+        firebase_uid: user.firebase_uid,
       },
     });
   } catch (err) {

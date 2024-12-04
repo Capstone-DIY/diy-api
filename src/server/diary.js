@@ -15,15 +15,18 @@ const router = express.Router();
 
 // Membuat diary baru
 router.post('/create', verifyIdToken, async (req, res, next) => {
-  const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
-
-  // Cek user id
-  if (!userId) {
+  const userUid = req.userUid; // Mengambil user firebase uid dari request object
+  
+  if (!userUid) {
     return res.status(400).json({
       status_code: 400,
-      message: 'UserId tidak ditemukan',
+      message: 'User not found',
     });
   }
+
+  const userId = await prisma.user.findUnique({
+    where: { firebase_uid: userUid },
+  }).then((user) => user.id);
 
   const payload = req.body;
 
@@ -33,11 +36,8 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
       message: 'Title atau story harus diisi',
     });
   }
-
-  // Pembersihan dan pengolahan story
+  
   let cleanStory = payload.story;
-
-  // Menghapus semua line breaks (\n) dan mengganti dengan spasi
   cleanStory = cleanStory
     .replace(/\n+/g, ' ')    // Mengganti semua newline (paragraf) menjadi satu spasi
     .replace(/\s+/g, ' ')    // Mengganti spasi ganda menjadi satu spasi
@@ -59,7 +59,7 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
 
         created_at: new Date(),
         updated_at: new Date(),
-        userId: userId,  // Menyertakan userId yang didapat dari token
+        userId: userId,
       },
     });
 
