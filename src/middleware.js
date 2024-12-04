@@ -1,4 +1,3 @@
-// middleware.js
 const { firebase } = require('./services/firebase.js');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -16,8 +15,7 @@ const verifyIdToken = async (req, res, next) => {
   try {
     const decodedToken = await firebase.auth().verifyIdToken(idToken);
     const userUid = decodedToken.uid;
-
-    // Verifikasi userUid di database untuk memastikan user ada
+    
     const user = await prisma.user.findUnique({
       where: { firebase_uid: userUid },
     });

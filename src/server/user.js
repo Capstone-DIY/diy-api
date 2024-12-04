@@ -76,19 +76,12 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
-    // Authenticate the password using Firebase Authentication
-    // Firebase Admin does not support password verification directly,
-    // Instead, use Firebase client-side SDK for password authentication (on your Android app, for example).
-    // Create a custom token to use as a JWT
-    const token = await firebase.auth().createCustomToken(user.uid);
-
     return res.status(200).json({
       status_code: 200,
       message: 'Login successful',
       data: {
         email: user.email,
         firebase_uid: user.uid,
-        token: token,
       },
     });
   } catch (err) {
@@ -96,7 +89,7 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// Get user profile by firebase UID with JWT Authentication
+// Get user profile by firebase UID with Firebase ID Token
 router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
 
@@ -107,7 +100,6 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   const userUid = user.firebase_uid;
 
   try {
-    // Check if the user is authorized to access this user
     if (userUid !== req.userUid) {
       return res.status(403).json({
         status_code: 403,
