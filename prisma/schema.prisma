@@ -14,7 +14,7 @@ model User {
   password        String      @db.VarChar(255)
   firebase_uid    String?     @unique
   name            String?
-  contact_number  String?     // Menambahkan kolom untuk nomor kontak
+  contact_number  String?     
   dob             DateTime?   @db.Date
   gender          String?
   created_at      DateTime    @default(now())

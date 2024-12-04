@@ -13,9 +13,9 @@ const router = express.Router();
 // };
 // initModel();
 
-// Membuat diary baru
+// Create new diary
 router.post('/create', verifyIdToken, async (req, res, next) => {
-  const userUid = req.userUid; // Mengambil user firebase uid dari request object
+  const userUid = req.userUid;
   
   if (!userUid) {
     return res.status(400).json({
@@ -33,21 +33,20 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
   if (!payload.title || !payload.story) {
     return res.status(400).json({
       status_code: 400,
-      message: 'Title atau story harus diisi',
+      message: 'Title and story must be filled',
     });
   }
   
   let cleanStory = payload.story;
   cleanStory = cleanStory
-    .replace(/\n+/g, ' ')    // Mengganti semua newline (paragraf) menjadi satu spasi
-    .replace(/\s+/g, ' ')    // Mengganti spasi ganda menjadi satu spasi
-    .trim();                 // Menghilangkan spasi di awal dan akhir
+    .replace(/\n+/g, ' ')    // Replace all newlines with spaces
+    .replace(/\s+/g, ' ')    // Replace double spaces with single spaces
+    .trim();                 // Remove leading and trailing spaces
 
   try {
     // TODO: Mengambil prediksi emosi dari model
     //const emotion = await getEmotion(model, cleanStory);
-
-    // Membuat diary untuk user yang sedang login
+    
     const newDiary = await prisma.diary.create({
       data: {   
         date: new Date(),
@@ -65,7 +64,7 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
 
     return res.status(201).json({
       status_code: 201,
-      message: 'Diary berhasil ditambahkan',
+      message: 'Diary successfully created',
       data: {
         diaryId: newDiary.id,
         title: newDiary.title,
@@ -78,9 +77,9 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
   }
 });
 
-// Menampilkan diary berdasarkan id diary
+// Get diary by diary id
 router.get('/:diaryId', verifyIdToken, async (req, res, next) => {
-  const id = req.params.diaryId;  // Mengambil diary id dari params
+  const id = req.params.diaryId;
   
   try {
     const diary = await prisma.diary.findUnique({
@@ -90,13 +89,13 @@ router.get('/:diaryId', verifyIdToken, async (req, res, next) => {
     if (!diary) {
       return res.status(404).json({
         status_code: 404,
-        message: 'Diary tidak ditemukan',
+        message: 'Diary not found',
       });
     }
 
     return res.status(200).json({
       status_code: 200,
-      message: 'Diary berhasil ditemukan',  
+      message: 'Diary found',  
       data: diary,
     });
   } catch (err) {
@@ -104,17 +103,17 @@ router.get('/:diaryId', verifyIdToken, async (req, res, next) => {
   }
 });
 
-// Mengedit diary berdasarkan id
+// Edit diary
 router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
-  const userId = req.userId; // Mengambil userId dari request object yang sudah di-decode dari token
+  const userId = req.userId;
 
-  const id = req.params.diaryId;  // Mengambil diary id dari params
+  const id = req.params.diaryId;
   const payload = req.body;
 
   if (!payload.title || !payload.story) {
     return res.status(400).json({
       status_code: 400,
-      message: 'Title atau story harus diisi',
+      message: 'Title and story must be filled',
     });
   }
 
@@ -126,7 +125,7 @@ router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
     if (!diary) {
       return res.status(404).json({
         status_code: 404,
-        message: 'Diary tidak ditemukan',
+        message: 'Diary not found',
       });
     }
 
@@ -144,13 +143,13 @@ router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
         // response: payload.response,
 
         updated_at: new Date(),
-        userId: userId,  // Menyertakan userId yang didapat dari token
+        userId: userId,
       },
     });
 
     return res.status(201).json({
       status_code: 201,
-      message: 'Diary berhasil diedit',
+      message: 'Diary successfully updated',
       data: updatedDiary,
     });
   } catch (err) {
@@ -158,9 +157,9 @@ router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
   }
 });
 
-// Menghapus diary berdasarkan id
+// Delete diary by diary id
 router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
-  const id = req.params.diaryId;  // Mengambil diary id dari params
+  const id = req.params.diaryId;
 
   try {
     const diary = await prisma.diary.findUnique({
@@ -170,18 +169,17 @@ router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
     if (!diary) {
       return res.status(404).json({
         status_code: 404,
-        message: 'Diary tidak ditemukan',
+        message: 'Diary not found',
       });
     }
-
-    // Melakukan penghapusan diary
+    
     const deletedDiary = await prisma.diary.delete({
       where: { id: parseInt(id) },
     });
 
     return res.status(200).json({
       status_code: 200,
-      message: 'Diary berhasil dihapus',
+      message: 'Diary successfully deleted',
       data: deletedDiary,
     });
   } catch (err) {
@@ -189,10 +187,9 @@ router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
   }
 });
 
-// Menampilkan semua diary berdasarkan user id
+// Get all diary by user id
 router.get('/', verifyIdToken, async (req, res, next) => {
-  // Tidak memerlukan parameter karena sudah mengambil dari token
-  const id = req.userId;  // Mengambil user id dari params
+  const id = req.userId;
 
   try {
     const diaries = await prisma.diary.findMany({
@@ -202,13 +199,13 @@ router.get('/', verifyIdToken, async (req, res, next) => {
     if (diaries.length === 0) {
       return res.status(404).json({
         status_code: 404,
-        message: 'Diary tidak ditemukan',
+        message: 'Diary not found',
       });
     }
 
     return res.status(200).json({
       status_code: 200,
-      message: 'Diary berhasil ditemukan',
+      message: 'Diary found',
       data: diaries,
     });
   } catch (err) {
