@@ -118,12 +118,11 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
       status_code: 200,
       message: 'User profile found',
       data: {
-        id: user.id,
         name: user.name,
-        email: user.email,
-        name: user.name,
+        username: user.username,
+        dob: user.dob,
         contact_number: user.contact_number,
-        firebase_uid: user.firebase_uid,
+        gender: user.gender,
       },
     });
   } catch (err) {
