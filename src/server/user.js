@@ -35,9 +35,9 @@ router.post('/register', async (req, res, next) => {
       data: {
         name: payload.name,
         email: payload.email,
+        contact_number: payload.contact_number,
         password: '',
         firebase_uid: userRecord.uid,
-        contact_number: payload.contact_number,
       },
     });
     
@@ -48,6 +48,7 @@ router.post('/register', async (req, res, next) => {
         id: newUser.id,
         name: newUser.name,
         email: newUser.email,
+        contact_number: newUser.contact_number,
         firebase_uid: newUser.firebase_uid,
       },
     });
