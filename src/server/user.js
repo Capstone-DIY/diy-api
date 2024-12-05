@@ -134,7 +134,7 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
 
 
 // Update user profile by firebase UID with Firebase ID Token
-router.patch('/user/:id', verifyIdToken, async (req, res, next) => {
+router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
   const { id } = req.params;
   const payload = req.body;
 
@@ -155,6 +155,17 @@ router.patch('/user/:id', verifyIdToken, async (req, res, next) => {
         status_code: 403,
         message: 'Unauthorized to update this user',
       });
+    }
+      
+    // Check the dob input format
+    if (payload.dob) {
+      const dobRegex = /^\d{1,2}-\d{1,2}-\d{4}$/;
+      if (!dobRegex.test(payload.dob)) {
+        return res.status(400).json({
+          status_code: 400,
+          message: 'Invalid date of birth format. Please use DD-MM-YYYY.',
+        });
+      }
     }
 
     const updatedUser = await prisma.user.update({
