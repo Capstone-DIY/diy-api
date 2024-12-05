@@ -26,6 +26,7 @@ router.post('/register', async (req, res, next) => {
     }
 
     const userRecord = await firebase.auth().createUser({
+      displayName: payload.name,
       email: payload.email,
       password: payload.password,
     });
@@ -67,22 +68,22 @@ router.post('/login', async (req, res, next) => {
       });
     }
     
-    const user = await firebase.auth().getUserByEmail(payload.email);
-
-    if (!user) {
-      return res.status(400).json({
-        status_code: 400,
-        message: 'Wrong Email or Password',
-      });
-    }
+    const userCredential = await firebase.auth().signInWithEmailAndPassword(payload.email, payload.password);
+    const user = userCredential.user;
 
     return res.status(200).json({
       status_code: 200,
       message: 'Login successful',
       data: {
+        name: user.displayName,
         email: user.email,
         firebase_uid: user.uid,
-      },
+      }
+    }).catch(() => {
+      return res.status(400).json({
+        status_code: 400,
+        message: 'Wrong Email or Password',
+      });
     });
   } catch (err) {
     return next(err);
