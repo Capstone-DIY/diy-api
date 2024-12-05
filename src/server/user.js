@@ -68,8 +68,14 @@ router.post('/login', async (req, res, next) => {
       });
     }
     
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(payload.email, payload.password);
-    const user = userCredential.user;
+    const user = await firebase.auth().getUserByEmail(payload.email);
+
+    if (!user) {
+      return res.status(400).json({
+        status_code: 400,
+        message: 'Wrong Email or Password',
+      });
+    }
 
     return res.status(200).json({
       status_code: 200,
@@ -78,12 +84,7 @@ router.post('/login', async (req, res, next) => {
         name: user.displayName,
         email: user.email,
         firebase_uid: user.uid,
-      }
-    }).catch(() => {
-      return res.status(400).json({
-        status_code: 400,
-        message: 'Wrong Email or Password',
-      });
+      },
     });
   } catch (err) {
     return next(err);
