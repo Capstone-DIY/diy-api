@@ -132,4 +132,54 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
   }
 });
 
+
+// Update user profile by firebase UID with Firebase ID Token
+router.patch('/user/:id', verifyIdToken, async (req, res, next) => {
+  const { id } = req.params;
+  const payload = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        status_code: 404,
+        message: 'User not found',
+      });
+    }
+
+    if (user.firebase_uid !== req.userUid) {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Unauthorized to update this user',
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: {
+        name: payload.name,
+        username: payload.username,
+        dob: payload.dob,
+        contact_number: payload.contact_number,
+        gender: payload.gender,
+      }
+    });
+
+    firebase.auth().updateUser(user.firebase_uid, {
+      displayName: payload.name,
+    });
+
+    return res.status(200).json({
+      status_code: 200,
+      message: 'User updated successfully',
+      data: updatedUser,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 module.exports = router;
