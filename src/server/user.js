@@ -156,24 +156,14 @@ router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
         message: 'Unauthorized to update this user',
       });
     }
-      
-    // Check the dob input format
-    if (payload.dob) {
-      const dobRegex = /^\d{4}-\d{1,2}-\d{1,2}$/;
-      if (!dobRegex.test(payload.dob)) {
-        return res.status(400).json({
-          status_code: 400,
-          message: 'Invalid date of birth format. Please use YYYY-MM-DD.',
-        });
-      }
-    }
-
+    
+    const dob = new Date(payload.dob);
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
         name: payload.name,
         username: payload.username,
-        dob: payload.dob,
+        dob: dob.toISOString(),
         contact_number: payload.contact_number,
         gender: payload.gender,
       }
@@ -183,10 +173,17 @@ router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
       displayName: payload.name,
     });
 
+    const formattedDob = dob.substring(0, 10);
     return res.status(200).json({
       status_code: 200,
       message: 'User updated successfully',
-      data: updatedUser,
+      data: {
+        name: updatedUser.name,
+        username: updatedUser.username,
+        dob: formattedDob,
+        contact_number: updatedUser.contact_number,
+        gender: updatedUser.gender,
+      },
     });
   } catch (err) {
     return next(err);
