@@ -159,11 +159,11 @@ router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
       
     // Check the dob input format
     if (payload.dob) {
-      const dobRegex = /^\d{1,2}-\d{1,2}-\d{4}$/;
+      const dobRegex = /^\d{4}-\d{1,2}-\d{1,2}$/;
       if (!dobRegex.test(payload.dob)) {
         return res.status(400).json({
           status_code: 400,
-          message: 'Invalid date of birth format. Please use DD-MM-YYYY.',
+          message: 'Invalid date of birth format. Please use YYYY-MM-DD.',
         });
       }
     }
