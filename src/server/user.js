@@ -127,7 +127,7 @@ router.get('/user', verifyIdToken, async (req, res, next) => {
 
 
 // Update user profile by firebase UID with Firebase ID Token
-router.patch('/user', verifyIdToken, async (req, res, next) => {
+router.patch('/user/edit', verifyIdToken, async (req, res, next) => {
   const userUid = req.userUid;
   const payload = req.body;
 
