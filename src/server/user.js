@@ -159,7 +159,7 @@ router.patch('/user', verifyIdToken, async (req, res, next) => {
       displayName: payload.name,
     });
 
-    const formattedDob = dob.substring(0, 10);
+    const formattedDob = updatedUser.dob.toLocaleDateString('en-CA');
     return res.status(200).json({
       status_code: 200,
       message: 'User updated successfully',
