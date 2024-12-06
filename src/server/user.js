@@ -93,23 +93,15 @@ router.post('/login', async (req, res, next) => {
 });
 
 // Get user profile by firebase UID with Firebase ID Token
-router.get('/user/:id', verifyIdToken, async (req, res, next) => {
-  const { id } = req.params;
+router.get('/user', verifyIdToken, async (req, res, next) => {
+  const userUid = req.userUid;
 
-  // Get user firebase ID from database
+  // Get user from database
   const user = await prisma.user.findUnique({
-    where: { id: parseInt(id) },
+    where: { firebase_uid: userUid },
   });
-  const userUid = user.firebase_uid;
 
   try {
-    if (userUid !== req.userUid) {
-      return res.status(403).json({
-        status_code: 403,
-        message: 'Unauthorized to access this user',
-      });
-    }
-
     if (!user) {
       return res.status(404).json({
         status_code: 404,
@@ -135,13 +127,13 @@ router.get('/user/:id', verifyIdToken, async (req, res, next) => {
 
 
 // Update user profile by firebase UID with Firebase ID Token
-router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
-  const { id } = req.params;
+router.patch('/user', verifyIdToken, async (req, res, next) => {
+  const userUid = req.userUid;
   const payload = req.body;
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(id) },
+      where: { firebase_uid: userUid },
     });
 
     if (!user) {
@@ -150,17 +142,10 @@ router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
         message: 'User not found',
       });
     }
-
-    if (user.firebase_uid !== req.userUid) {
-      return res.status(403).json({
-        status_code: 403,
-        message: 'Unauthorized to update this user',
-      });
-    }
     
     const dob = new Date(payload.dob);
     const updatedUser = await prisma.user.update({
-      where: { id: parseInt(id) },
+      where: { firebase_uid: userUid },
       data: {
         name: payload.name,
         username: payload.username,
@@ -170,7 +155,7 @@ router.patch('/user/update/:id', verifyIdToken, async (req, res, next) => {
       }
     });
 
-    firebase.auth().updateUser(user.firebase_uid, {
+    firebase.auth().updateUser(userUid, {
       displayName: payload.name,
     });
 
