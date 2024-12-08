@@ -189,11 +189,25 @@ router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
 
 // Get all diary by user id
 router.get('/', verifyIdToken, async (req, res, next) => {
-  const id = req.userId;
+  const userUid = req.userUid;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { firebase_uid: userUid },
+    });
+
+    if (!user) {
+      // user tidak ditemukan
+      return res.status(404).json({
+        status_code: 404,
+        message: 'User tidak ditemukan',
+      });
+    }
+
+    const userId = user.id;
+
     const diaries = await prisma.diary.findMany({
-      where: { userId: id },
+      where: { userId: userId },
     });
 
     if (diaries.length === 0) {

@@ -96,6 +96,13 @@ router.post('/login', async (req, res, next) => {
 router.get('/user', verifyIdToken, async (req, res, next) => {
   const userUid = req.userUid;
 
+  if (!userUid) {
+    return res.status(401).json({
+      status_code: 401,
+      message: 'Unauthorized, please login first',
+    });
+  }
+
   // Get user from database
   const user = await prisma.user.findUnique({
     where: { firebase_uid: userUid },
