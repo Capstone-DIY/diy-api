@@ -35,6 +35,41 @@ const emotionResponses = {
     ]
 };
 
+// List of quotes based on emotion
+const emotionQuotes = {
+  sadness: [
+      'It seems like you are feeling down, I hope things get better soon.',
+      'Sadness can be hard, but it will pass in time.'
+  ],
+  joy: [
+      'It looks like you’re in a great mood! Enjoy the happiness!',
+      'Joy is a beautiful feeling, may it last forever!'
+  ],
+  love: [
+      'Love is the strongest emotion. Cherish it!',
+      'Love brings warmth to life. It’s wonderful you’re feeling this!'
+  ],
+  anger: [
+      'Anger is powerful, but make sure to calm down and take care of yourself.',
+      'It’s okay to feel angry, just remember to release it in a healthy way.'
+  ],
+  fear: [
+      'Fear can be overwhelming, but remember it’s just a feeling, not a fact.',
+      'It’s okay to be afraid, just don’t let it control you.'
+  ],
+  surprise: [
+      'What a surprise! Hope it’s a pleasant one.',
+      'Surprises can be exciting! Hope it was a good one.'
+  ],
+  neutral: [
+        'Stay positive.',
+        'Keep going, one step at a time.',
+        'Things may be tough, but you’re tougher.',
+        'Take it easy, tomorrow is another day.',
+        'Keep your head up, better days are ahead.'
+    ]
+};
+
 // const { getEmotion } = require('../services/inferenceService');
 // const loadModel = require('../services/loadModel');
 // let model;
@@ -262,6 +297,31 @@ router.get('/', verifyIdToken, async (req, res, next) => {
       message: 'Diary found',
       data: diaries,
     });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Get a quote based on the most dominant emotion
+router.get('/quote', verifyIdToken, async (req, res, next) => {
+
+  try {
+    // Get the dominant emotion sent from the frontend (e.g. 'joy', 'sadness', etc.)
+    const dominantEmotion = req.query.dominantEmotion;
+
+    if (emotions.includes(dominantEmotion)) {
+
+      const responses = emotionQuotes[dominantEmotion];
+      const randomQuote = responses[Math.floor(Math.random() * responses.length)];
+      
+      res.json({ quote: randomQuote });
+    } else {
+      // If the emotion is not recognized, send a random neutral quote
+      const neutralQuotes = emotionQuotes.neutral;
+      const randomNeutralQuote = neutralQuotes[Math.floor(Math.random() * neutralQuotes.length)];
+
+      res.json({ quote: randomNeutralQuote });
+    }
   } catch (err) {
     return next(err);
   }
