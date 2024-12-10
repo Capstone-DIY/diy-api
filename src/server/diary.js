@@ -316,7 +316,7 @@ router.get('/quote', verifyIdToken, async (req, res, next) => {
       
       res.json({ quote: randomQuote });
     } else {
-      // If the emotion is not recognized, send a random neutral quote
+      // If the emotion is not recognized, send a random neutral quote 
       const neutralQuotes = emotionQuotes.neutral;
       const randomNeutralQuote = neutralQuotes[Math.floor(Math.random() * neutralQuotes.length)];
 
