@@ -1,5 +1,6 @@
 const { verifyIdToken } = require('../middleware.js'); // Import middleware yang benar
 const { PrismaClient } = require('@prisma/client');
+const { model } = require('@tensorflow/tfjs-node');
 const axios = require('axios');
 const prisma = new PrismaClient();
 const express = require('express');
@@ -100,7 +101,8 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
 
   // Get emotion from model API
   const modelUrl = process.env.MODEL_URL;
-  const prediction = await axios.get(modelUrl, {
+  console.log(modelUrl);
+  const prediction = await axios.post(modelUrl, {
     params: {
       text: cleanStory,  // Send the clean story as a query parameter
     }
