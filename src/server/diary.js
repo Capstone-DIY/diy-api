@@ -100,7 +100,7 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
     .trim();                 // Remove leading and trailing spaces
 
   // Get emotion from model API
-  const modelUrl = process.env.MODEL_URL;
+  const modelUrl = process.env.MODEL_API_URL;
   console.log(modelUrl);
   const prediction = await axios.post(modelUrl, {
     params: {
