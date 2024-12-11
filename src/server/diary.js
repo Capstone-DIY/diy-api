@@ -302,6 +302,8 @@ router.get('/quote', verifyIdToken, async (req, res, next) => {
   try {
     // Get the dominant emotion sent from the frontend (e.g. 'joy', 'sadness', etc.)
     const dominantEmotion = req.query.dominantEmotion;
+      
+    const emotions = ['Sadness', 'Joy', 'Love', 'Anger', 'Fear', 'Surprise'];
 
     if (emotions.includes(dominantEmotion)) {
 
@@ -311,7 +313,7 @@ router.get('/quote', verifyIdToken, async (req, res, next) => {
       res.json({ quote: randomQuote });
     } else {
       // If the emotion is not recognized, send a random neutral quote 
-      const neutralQuotes = emotionQuotes.neutral;
+      const neutralQuotes = emotionQuotes.Neutral;
       const randomNeutralQuote = neutralQuotes[Math.floor(Math.random() * neutralQuotes.length)];
 
       res.json({ quote: randomNeutralQuote });
