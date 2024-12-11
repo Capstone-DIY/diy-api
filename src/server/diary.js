@@ -1,35 +1,33 @@
 const { verifyIdToken } = require('../middleware.js'); // Import middleware yang benar
 const { PrismaClient } = require('@prisma/client');
+const { model } = require('@tensorflow/tfjs-node');
 const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
 
-// List of possible emotions
-const emotions = ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise'];
-
 // List of responses based on emotion
 const emotionResponses = {
-    sadness: [
+    Sadness: [
         'It seems like you are feeling down, I hope things get better soon.',
         'Sadness can be hard, but it will pass in time.'
     ],
-    joy: [
+    Joy: [
         'It looks like you’re in a great mood! Enjoy the happiness!',
         'Joy is a beautiful feeling, may it last forever!'
     ],
-    love: [
+    Love: [
         'Love is the strongest emotion. Cherish it!',
         'Love brings warmth to life. It’s wonderful you’re feeling this!'
     ],
-    anger: [
+    Anger: [
         'Anger is powerful, but make sure to calm down and take care of yourself.',
         'It’s okay to feel angry, just remember to release it in a healthy way.'
     ],
-    fear: [
+    Fear: [
         'Fear can be overwhelming, but remember it’s just a feeling, not a fact.',
         'It’s okay to be afraid, just don’t let it control you.'
     ],
-    surprise: [
+    Surprise: [
         'What a surprise! Hope it’s a pleasant one.',
         'Surprises can be exciting! Hope it was a good one.'
     ]
@@ -37,47 +35,38 @@ const emotionResponses = {
 
 // List of quotes based on emotion
 const emotionQuotes = {
-  sadness: [
+  Sadness: [
       'It seems like you are feeling down, I hope things get better soon.',
       'Sadness can be hard, but it will pass in time.'
   ],
-  joy: [
+  Joy: [
       'It looks like you’re in a great mood! Enjoy the happiness!',
       'Joy is a beautiful feeling, may it last forever!'
   ],
-  love: [
+  Love: [
       'Love is the strongest emotion. Cherish it!',
       'Love brings warmth to life. It’s wonderful you’re feeling this!'
   ],
-  anger: [
+  Anger: [
       'Anger is powerful, but make sure to calm down and take care of yourself.',
       'It’s okay to feel angry, just remember to release it in a healthy way.'
   ],
-  fear: [
+  Fear: [
       'Fear can be overwhelming, but remember it’s just a feeling, not a fact.',
       'It’s okay to be afraid, just don’t let it control you.'
   ],
-  surprise: [
+  Surprise: [
       'What a surprise! Hope it’s a pleasant one.',
       'Surprises can be exciting! Hope it was a good one.'
   ],
-  neutral: [
+  Neutral: [
         'Stay positive.',
         'Keep going, one step at a time.',
         'Things may be tough, but you’re tougher.',
         'Take it easy, tomorrow is another day.',
         'Keep your head up, better days are ahead.'
-    ]
+  ]
 };
-
-// const { getEmotion } = require('../services/inferenceService');
-// const loadModel = require('../services/loadModel');
-// let model;
-
-// async function initModel() {
-//   model = await loadModel();
-// };
-// initModel();
 
 // Create new diary
 router.post('/create', verifyIdToken, async (req, res, next) => {
@@ -109,27 +98,28 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
     .replace(/\s+/g, ' ')    // Replace double spaces with single spaces
     .trim();                 // Remove leading and trailing spaces
 
-  // Randomly select an emotion from the emotions list
-  const emotion = emotions[Math.floor(Math.random() * emotions.length)];
+  // Get emotion from model API
+  const modelUrl = process.env.MODEL_URL;
+  const prediction = await axios.get(modelUrl, {
+    params: {
+      text: cleanStory,  // Send the clean story as a query parameter
+    }
+  });
+  const data = prediction.data;
+  const emotion = data.label;
 
   // Randomly select a response for the chosen emotion
   const response = emotionResponses[emotion][Math.floor(Math.random() * emotionResponses[emotion].length)];
   
   try {
-    // TODO: Mengambil prediksi emosi dari model
-    //const emotion = await getEmotion(model, cleanStory);
     
     const newDiary = await prisma.diary.create({
       data: {   
         date: new Date(),
         title: payload.title,
         story: cleanStory,
-        
-        // TODO: Ambil emotion dari prediksi model
         emotion: emotion,
-
         response: response,
-
         created_at: new Date(),
         updated_at: new Date(),
         userId: userId,

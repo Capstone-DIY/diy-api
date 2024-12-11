@@ -1,5 +1,4 @@
-const { initializeFirebase } = require('./services/firebase.js'); // Ensure Firebase is initialized
-// Initialize Firebase before the app starts
+const { initializeFirebase } = require('./services/firebase.js');
 initializeFirebase();
 
 const express = require('express');
