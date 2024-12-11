@@ -1,6 +1,6 @@
 const { verifyIdToken } = require('../middleware.js'); // Import middleware yang benar
 const { PrismaClient } = require('@prisma/client');
-const { model } = require('@tensorflow/tfjs-node');
+const axios = require('axios');
 const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
