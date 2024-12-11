@@ -103,12 +103,11 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
   const modelUrl = process.env.MODEL_API_URL;
   console.log(modelUrl);
   const prediction = await axios.post(modelUrl, {
-      text: cleanStory,  // Send the clean story as a query parameter
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+    text: cleanStory,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+    }
   });
   const data = prediction.data;
   const emotion = data.label;
