@@ -6,68 +6,8 @@ const prisma = new PrismaClient();
 const express = require('express');
 const router = express.Router();
 
-// List of responses based on emotion
-const emotionResponses = {
-    Sadness: [
-        'It seems like you are feeling down, I hope things get better soon.',
-        'Sadness can be hard, but it will pass in time.'
-    ],
-    Joy: [
-        'It looks like you’re in a great mood! Enjoy the happiness!',
-        'Joy is a beautiful feeling, may it last forever!'
-    ],
-    Love: [
-        'Love is the strongest emotion. Cherish it!',
-        'Love brings warmth to life. It’s wonderful you’re feeling this!'
-    ],
-    Anger: [
-        'Anger is powerful, but make sure to calm down and take care of yourself.',
-        'It’s okay to feel angry, just remember to release it in a healthy way.'
-    ],
-    Fear: [
-        'Fear can be overwhelming, but remember it’s just a feeling, not a fact.',
-        'It’s okay to be afraid, just don’t let it control you.'
-    ],
-    Surprise: [
-        'What a surprise! Hope it’s a pleasant one.',
-        'Surprises can be exciting! Hope it was a good one.'
-    ]
-};
-
-// List of quotes based on emotion
-const emotionQuotes = {
-  Sadness: [
-      'It seems like you are feeling down, I hope things get better soon.',
-      'Sadness can be hard, but it will pass in time.'
-  ],
-  Joy: [
-      'It looks like you’re in a great mood! Enjoy the happiness!',
-      'Joy is a beautiful feeling, may it last forever!'
-  ],
-  Love: [
-      'Love is the strongest emotion. Cherish it!',
-      'Love brings warmth to life. It’s wonderful you’re feeling this!'
-  ],
-  Anger: [
-      'Anger is powerful, but make sure to calm down and take care of yourself.',
-      'It’s okay to feel angry, just remember to release it in a healthy way.'
-  ],
-  Fear: [
-      'Fear can be overwhelming, but remember it’s just a feeling, not a fact.',
-      'It’s okay to be afraid, just don’t let it control you.'
-  ],
-  Surprise: [
-      'What a surprise! Hope it’s a pleasant one.',
-      'Surprises can be exciting! Hope it was a good one.'
-  ],
-  Neutral: [
-        'Stay positive.',
-        'Keep going, one step at a time.',
-        'Things may be tough, but you’re tougher.',
-        'Take it easy, tomorrow is another day.',
-        'Keep your head up, better days are ahead.'
-  ]
-};
+const emotionResponses = require('./responses.js');
+const emotionQuotes = require('./quotes.js');
 
 // Create new diary
 router.post('/create', verifyIdToken, async (req, res, next) => {

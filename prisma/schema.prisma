@@ -27,11 +27,11 @@ model User {
 
 model Diary {
   id              Int         @id @default(autoincrement())
-  date            DateTime
-  title           String
-  story           String      @db.VarChar(254)
+  date            DateTime    
+  title           String      
+  story           String      @db.Text
   emotion         String?     
-  response        String?
+  response        String?     
   favorited       Boolean     @default(false)
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
