@@ -64,7 +64,6 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
         emotion: emotion,
         response: response,
         created_at: new Date(),
-        updated_at: new Date(),
         userId: userId,
       },
     });
