@@ -1,0 +1,58 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'asia-southeast2-docker.pkg.dev/diy-capstone/diy-api/diy-api-production:$COMMIT_SHA',
+        '.',
+      ]
+
+  # Step 2: Push the Docker image to Google Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'asia-southeast2-docker.pkg.dev/diy-capstone/diy-api/diy-api:$COMMIT_SHA',
+      ]
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'diy-api'
+      - '--image'
+      - 'asia-southeast2-docker.pkg.dev/diy-capstone/diy-api/diy-api:$COMMIT_SHA'
+      - '--allow-unauthenticated'
+      - --service-account
+      - 'cloud-run-diy-capstone@diy-capstone.iam.gserviceaccount.com'
+      - '--region'
+      - 'asia-southeast2'
+      - '--cpu'
+      - '1'
+      - '--memory'
+      - '1G'
+      - '--min-instances'
+      - '1'
+      - '--max-instances'
+      - '3'
+
+    secretEnv: ['DATABASE_URL', 'FIREBASE_SERVICE_ACCOUNT', 'MODEL_API_URL']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+images:
+  - 'asia-southeast2-docker.pkg.dev/diy-capstone/diy-api/diy-api:$COMMIT_SHA'
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/diy-capstone/secrets/database-url/versions/latest
+      env: 'DATABASE_URL'
+    - versionName: projects/diy-capstone/secrets/model-api-url/versions/latest
+      env: 'MODEL_API_URL'
+    - versionName: projects/diy-capstone/secrets/firebase-service-account/versions/latest
+      env: 'FIREBASE_SERVICE_ACCOUNT'
