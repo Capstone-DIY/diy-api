@@ -1,45 +1,47 @@
-const jwt = require('jsonwebtoken');
+const { firebase } = require('./services/firebase.js');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-const authenticateJWT = async (req, res, next) => {
-  const token = req.header('Authorization')?.split(' ')[1];  // Mengambil token dari Authorization header (Bearer <token>)
+const verifyIdToken = async (req, res, next) => {
+  const idToken = req.header('Authorization')?.split(' ')[1];
 
-  if (!token) {
+  if (!idToken) {
     return res.status(401).json({
       status_code: 401,
-      message: 'Token tidak ditemukan, silakan login terlebih dahulu',
+      message: 'Unauthorized Token',
     });
   }
 
   try {
-    // Verifikasi token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Ambil userId dari decoded token
-    const userIdFromToken = decoded.id;  // Sesuaikan dengan nama field pada token, biasanya "id" atau "userId"
-
-    // Verifikasi userId di database untuk memastikan user ada
+    const decodedToken = await firebase.auth().verifyIdToken(idToken);
+    const userUid = decodedToken.uid;
+    
     const user = await prisma.user.findUnique({
-      where: { id: userIdFromToken },
+      where: { firebase_uid: userUid },
     });
 
     if (!user) {
       return res.status(403).json({
         status_code: 403,
-        message: 'User tidak ditemukan, token tidak valid',
+        message: 'User not found, invalid token',
       });
     }
-
-    // Jika user ditemukan, lanjutkan ke route handler berikutnya
-    req.userId = user.id;  // Menyimpan userId dari token ke request object
-    next();  // Lanjut ke route handler berikutnya
+    
+    req.userUid = user.firebase_uid;
+    next()
   } catch (err) {
-    return res.status(403).json({
-      status_code: 403,
-      message: 'Token tidak valid atau telah kadaluarsa',
+    if (err.code === 'auth/argument-error' || err.code === 'auth/id-token-expired') {
+      return res.status(403).json({
+        status_code: 403,
+        message: 'Invalid token or token expired',
+      });
+    }
+    
+    return res.status(500).json({
+      status_code: 500,
+      message: 'Token verification failed',
     });
   }
 };
 
-module.exports = { authenticateJWT };
+module.exports = { verifyIdToken };

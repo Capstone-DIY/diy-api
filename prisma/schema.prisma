@@ -8,11 +8,13 @@ datasource db {
 }
 
 model User {
-  id              Int         @id @default(autoincrement()) 
+  id              Int         @id @default(autoincrement())
   email           String      @unique @db.VarChar(64)
   username        String?     @unique
-  password        String
+  password        String      @db.VarChar(255)
+  firebase_uid    String?     @unique
   name            String?
+  contact_number  String?     
   dob             DateTime?   @db.Date
   gender          String?
   created_at      DateTime    @default(now())
@@ -25,14 +27,13 @@ model User {
 
 model Diary {
   id              Int         @id @default(autoincrement())
-  date            DateTime
-  title           String
-  story           String      @db.VarChar(254)
+  date            DateTime    
+  title           String      
+  story           String      @db.Text
   emotion         String?     
-  response        String?
+  response        String?     
   favorited       Boolean     @default(false)
   created_at      DateTime    @default(now())
-  updated_at      DateTime    @updatedAt
   userId          Int         
   user            User        @relation("UserDiaries",fields: [userId], references: [id])
 
