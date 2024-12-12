@@ -1,6 +1,7 @@
 const { initializeFirebase } = require('./services/firebase.js');
 initializeFirebase();
 
+const InputError = require('./exceptions/InputError.js');
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -28,12 +29,21 @@ app.use('/diary', diaryRouter);
 
 // Error Handling middleware (this goes last)
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({
-    status_code: 500,
-    message: 'Internal Server Error',
-    error: err.message || err,
-  });
+  if (err instanceof InputError) {
+    return res.status(err.statusCode).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+
+  if (err.isBoom) {
+    return res.status(err.output.statusCode).json({
+      status: 'fail',
+      message: err.message,
+    });
+  }
+
+  next(err);
 });
 
 app.listen(PORT, () => {
