@@ -1,8 +1,7 @@
-const { verifyIdToken } = require('../middleware.js'); // Import middleware yang benar
+const { verifyIdToken } = require('../middleware.js');
 const { PrismaClient } = require('@prisma/client');
-const { model } = require('@tensorflow/tfjs-node');
-const axios = require('axios');
 const prisma = new PrismaClient();
+const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 
@@ -85,86 +84,6 @@ router.post('/create', verifyIdToken, async (req, res, next) => {
     return next(err);
   }
 });
-
-// Get diary by diary id
-// router.get('/:diaryId', verifyIdToken, async (req, res, next) => {
-//   const id = req.params.diaryId;
-  
-//   try {
-//     const diary = await prisma.diary.findUnique({
-//       where: { id: parseInt(id) },
-//     });
-    
-//     if (!diary) {
-//       return res.status(404).json({
-//         status_code: 404,
-//         message: 'Diary not found',
-//       });
-//     }
-
-//     return res.status(200).json({
-//       status_code: 200,
-//       message: 'Diary found',  
-//       data: diary,
-//     });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
-
-// Edit diary
-// router.put('/:diaryId', verifyIdToken, async (req, res, next) => {
-//   const userId = req.userId;
-
-//   const id = req.params.diaryId;
-//   const payload = req.body;
-
-//   if (!payload.title || !payload.story) {
-//     return res.status(400).json({
-//       status_code: 400,
-//       message: 'Title and story must be filled',
-//     });
-//   }
-
-//   try {
-//     const diary = await prisma.diary.findUnique({
-//       where: { id: parseInt(id) },
-//     });
-    
-//     if (!diary) {
-//       return res.status(404).json({
-//         status_code: 404,
-//         message: 'Diary not found',
-//       });
-//     }
-
-//     // Melakukan pembaruan diary
-//     const updatedDiary = await prisma.diary.update({
-//       where: { id: parseInt(id) },
-//       data: {
-//         title: payload.title,
-//         story: payload.story,
-
-//         // TODO: Ambil emotion dari prediksi model
-//         // emotion: payload.emotion,
-
-//         // TODO: Ambil response dari model
-//         // response: payload.response,
-
-//         updated_at: new Date(),
-//         userId: userId,
-//       },
-//     });
-
-//     return res.status(201).json({
-//       status_code: 201,
-//       message: 'Diary successfully updated',
-//       data: updatedDiary,
-//     });
-//   } catch (err) {
-//     return next(err);
-//   }
-// });
 
 // Delete diary by diary id
 router.delete('/:diaryId', verifyIdToken, async (req, res, next) => {
